@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Starfinder GM Assistant - Active Encounter</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#3b494c",
+                        "surface-container-high": "#242a34",
+                        "on-primary-container": "#00626e",
+                        "on-secondary-fixed": "#0f1c2c",
+                        "primary-fixed-dim": "#00daf3",
+                        "on-primary-fixed-variant": "#004f58",
+                        "inverse-on-surface": "#2a313b",
+                        "surface-bright": "#333a44",
+                        "primary-fixed": "#9cf0ff",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#ffdcc3",
+                        "surface-dim": "#0d141d",
+                        "surface-container-highest": "#2e353f",
+                        "secondary-fixed": "#d6e4f9",
+                        "secondary": "#bac8dc",
+                        "on-secondary-fixed-variant": "#3a4859",
+                        "on-primary-fixed": "#001f24",
+                        "on-tertiary-fixed": "#2f1500",
+                        "on-tertiary": "#4d2600",
+                        "primary": "#c3f5ff",
+                        "inverse-primary": "#006875",
+                        "on-primary": "#00363d",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "on-secondary-container": "#a8b6ca",
+                        "on-background": "#dce3f0",
+                        "surface-container-lowest": "#080f18",
+                        "on-tertiary-container": "#894800",
+                        "on-surface": "#dce3f0",
+                        "surface-container-low": "#151c26",
+                        "secondary-container": "#3a4859",
+                        "surface-container": "#19202a",
+                        "outline": "#849396",
+                        "background": "#0d141d",
+                        "tertiary": "#ffe9da",
+                        "secondary-fixed-dim": "#bac8dc",
+                        "inverse-surface": "#dce3f0",
+                        "primary-container": "#00e5ff",
+                        "error-container": "#93000a",
+                        "surface-tint": "#00daf3",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "surface": "#0d141d",
+                        "on-secondary": "#243141",
+                        "on-error": "#690005",
+                        "on-surface-variant": "#bac9cc",
+                        "on-error-container": "#ffdad6",
+                        "surface-variant": "#2e353f",
+                        "tertiary-container": "#ffc598"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Space Grotesk"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #0d141d; color: #dce3f0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .corner-cut { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%); }
+        .corner-cut-reverse { clip-path: polygon(15px 0, 100% 0, 100% 100%, 0 100%, 0 15px); }
+        .glow-primary { box-shadow: 0 0 15px rgba(195, 245, 255, 0.15); }
+        .zebra-stripe:nth-child(even) { background-color: rgba(255, 255, 255, 0.03); }
+    </style>
+</head>
+<body class="overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-[#0d141d] dark:bg-[#0d141d] flex justify-between items-center w-full px-6 h-16 docked full-width top-0 border-b-2 border-[#c3f5ff]/15 z-50">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black text-[#c3f5ff] tracking-tighter font-['Space_Grotesk']">Starfinder GM Assistant</span>
+<nav class="hidden md:flex gap-6">
+<a class="font-['Space_Grotesk'] uppercase tracking-wider text-sm text-[#bac8dc] hover:text-[#c3f5ff] transition-colors" href="#">PLAYERS</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-wider text-sm text-[#bac8dc] hover:text-[#c3f5ff] transition-colors" href="#">CREATURES</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-wider text-sm text-[#bac8dc] hover:text-[#c3f5ff] transition-colors" href="#">ENCOUNTERS</a>
+<a class="font-['Space_Grotesk'] uppercase tracking-wider text-sm text-[#c3f5ff] border-b-2 border-[#c3f5ff] pb-1" href="#">ACTIVE</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#c3f5ff] hover:bg-[#c3f5ff]/10 p-2 cursor-pointer transition-colors" data-icon="notifications_active">notifications_active</span>
+<span class="material-symbols-outlined text-[#c3f5ff] hover:bg-[#c3f5ff]/10 p-2 cursor-pointer transition-colors" data-icon="settings">settings</span>
+</div>
+</header>
+<!-- Main Content Canvas (No sidebar, so ml-0) -->
+<main class="ml-0 mt-0 p-6 h-[calc(100vh-64px)] overflow-y-auto bg-surface flex flex-col gap-6">
+<!-- Top Status Bar (Encounter Info) -->
+<div class="flex justify-between items-end border-b border-outline-variant/30 pb-4">
+<div>
+<h1 class="text-3xl font-black font-headline text-primary tracking-tighter uppercase">Abyssal Reach Outpost</h1>
+<p class="text-secondary font-label text-xs tracking-widest uppercase opacity-70">Round 4 • Tactical Phase • Hazard Level 12</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2 bg-primary text-on-primary font-bold font-label text-xs uppercase tracking-widest transition-transform active:scale-95 glow-primary">Next Turn</button>
+<button class="px-6 py-2 border border-primary/40 text-primary font-bold font-label text-xs uppercase tracking-widest hover:bg-primary/10 transition-all">Pause Encounter</button>
+</div>
+</div>
+<!-- High-Density HUD Layout (3 Column Layout Maintained) -->
+<div class="grid grid-cols-12 gap-6 flex-1 min-h-0">
+<!-- Left Column: Initiative Queue -->
+<div class="col-span-3 flex flex-col gap-2">
+<h2 class="text-xs font-bold font-label text-primary uppercase tracking-widest mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="format_list_numbered">format_list_numbered</span>
+                    Combat Sequence
+                </h2>
+<div class="bg-surface-container-low border border-outline-variant/10 flex-1 overflow-y-auto">
+<!-- Initiative Item: Active -->
+<div class="flex items-center gap-3 p-3 bg-primary/10 border-l-4 border-primary">
+<span class="text-lg font-bold font-label text-primary">28</span>
+<div class="w-10 h-10 bg-surface-container-highest border border-primary/30 shrink-0">
+<img class="w-full h-full object-cover grayscale brightness-125 contrast-125" data-alt="Cybernetic android with glowing blue optical sensors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqM-vNf70JJv6eWaynR_QJqcm8QgeqqkCtTSI7BN83FJ7jksMHVUnVohRQzRd_-kx12JKu8rfZozS_jZ1IZgnsEmp8idLdMuR2aVXMpjQTvHATDvTwN5VDwjEcFOR1iyZqa-SmeZP3ecxz8dAXkKq31g_eW8vTgl9TcDZlLyoeyDj3xfw1GioAiZ_YtkxVD3Q6Z61iFhHKqgbTRsPqRMniPe83RM2BSdrHufiowy84yRP7FW6h-hWYNzZnvGP6QvWZE_JhR2iSsg"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="text-[10px] text-primary font-bold font-label uppercase">Android Technomancer</div>
+<div class="h-1 w-full bg-surface-container-highest mt-1">
+<div class="h-full bg-primary-container" style="width: 65%;"></div>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="double_arrow">double_arrow</span>
+</div>
+<!-- Initiative Item -->
+<div class="flex items-center gap-3 p-3 zebra-stripe opacity-60 hover:opacity-100 transition-opacity">
+<span class="text-lg font-bold font-label text-secondary">24</span>
+<div class="w-10 h-10 bg-surface-container-highest border border-outline-variant/20 shrink-0">
+<img class="w-full h-full object-cover grayscale" data-alt="Heavy armored sentinel robot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUESglkJuj-oaFo6pfAClJaamv5ijOb7MlRAZNp1CBVGKv2-9hzRn9tLpi27CS3O3ghq0p7Ubub-6dfka0CUC4XwSYqJ2I_vhWUpkB4jffRkxUZKv7e530UpFeV0f9uRsZOCjjM8xWvxzjZZ6jS31gNyNWib6Vt_FKV4sFV-XWWRNKi9v4wVqHbmV9mPTBhB2TFF7rN5VlsSiw2WQAfIu-d3omVy1uax55Mj3yUhJWk9wCxawj4UEOwmRFTPjIPcEwVxtS0q04aQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="text-[10px] text-secondary font-bold font-label uppercase">Void-Warden Sentinel</div>
+<div class="h-1 w-full bg-surface-container-highest mt-1">
+<div class="h-full bg-primary-container" style="width: 90%;"></div>
+</div>
+</div>
+</div>
+<!-- Initiative Item: Hazard -->
+<div class="flex items-center gap-3 p-3 zebra-stripe opacity-60">
+<span class="text-lg font-bold font-label text-tertiary">19</span>
+<div class="w-10 h-10 bg-tertiary/10 border border-tertiary/30 shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary" data-icon="warning">warning</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="text-[10px] text-tertiary font-bold font-label uppercase">EMP Surge Hazard</div>
+<div class="text-[8px] text-tertiary/70 uppercase">Triggers: Start of Round</div>
+</div>
+</div>
+<!-- Initiative Item -->
+<div class="flex items-center gap-3 p-3 zebra-stripe opacity-60">
+<span class="text-lg font-bold font-label text-secondary">15</span>
+<div class="w-10 h-10 bg-surface-container-highest border border-outline-variant/20 shrink-0">
+<img class="w-full h-full object-cover grayscale" data-alt="Space marine in heavy battle suit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDk0PqwgMRGYH5M_SMK605ZNWPLia-kWSJ8HO7G94J8pGnc8ilYLKFSn0jWzYFJvWf7M5mMacAZEKOBL7dWPSS1v2nu9DugelasQYrgvSsYy7rCqkjCD5GMgRRNzl1rmjICd1t0V4Zg0Fh5r2RYo6X_o-p4HGNPzDfUPo2odl4HQQUqTPKIHwh3K588ll1MUcd1WNIb0OUxjiB6PCUzNgIVEHFIwBCh70EuE8eTr_m96UN2uK3UHaTOOaWWbXiUNIMqfIP8J7inog"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="text-[10px] text-secondary font-bold font-label uppercase">Strike Team Leader</div>
+<div class="h-1 w-full bg-surface-container-highest mt-1">
+<div class="h-full bg-primary-container" style="width: 42%;"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Center/Right Column: Dual Identical Width Panels (Col-span 9) -->
+<div class="col-span-9 grid grid-cols-2 gap-6">
+<!-- Panel 1: Active Unit Details -->
+<div class="flex flex-col gap-4">
+<h2 class="text-xs font-bold font-label text-primary uppercase tracking-widest flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="bolt">bolt</span>
+                        Active Entity
+                    </h2>
+<div class="corner-cut bg-surface-container-high p-6 border-l-2 border-primary relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 to-transparent"></div>
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="text-2xl font-black font-headline text-primary tracking-tight uppercase leading-none">Android Technomancer</h3>
+<p class="text-[10px] text-secondary font-label tracking-widest uppercase mt-1">Level 8 Specialist • Android • Technomancer</p>
+<!-- Traits Tag Row -->
+<div class="flex flex-wrap gap-1.5 mt-3">
+<span class="px-2 py-0.5 bg-primary/20 border border-primary/30 text-[9px] font-bold font-label text-primary uppercase">Android</span>
+<span class="px-2 py-0.5 bg-primary/20 border border-primary/30 text-[9px] font-bold font-label text-primary uppercase">Cyber-Organic</span>
+<span class="px-2 py-0.5 bg-primary/20 border border-primary/30 text-[9px] font-bold font-label text-primary uppercase">Humanoid</span>
+</div>
+</div>
+<div class="text-right">
+<div class="text-xs font-bold font-label text-primary uppercase">Current HP</div>
+<div class="text-3xl font-black font-headline text-primary">54 <span class="text-sm font-normal opacity-50">/ 82</span></div>
+</div>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-3 gap-2 mb-6">
+<div class="bg-surface-container-highest p-3 flex flex-col items-center">
+<span class="text-[10px] font-label text-secondary uppercase opacity-60">Armor Class</span>
+<span class="text-xl font-black font-headline text-primary">26</span>
+</div>
+<div class="bg-surface-container-highest p-3 flex flex-col items-center">
+<span class="text-[10px] font-label text-secondary uppercase opacity-60">Fortitude</span>
+<span class="text-xl font-black font-headline text-primary">+12</span>
+</div>
+<div class="bg-surface-container-highest p-3 flex flex-col items-center">
+<span class="text-[10px] font-label text-secondary uppercase opacity-60">Reflex</span>
+<span class="text-xl font-black font-headline text-primary">+14</span>
+</div>
+</div>
+<!-- Perception Panel -->
+<div class="mb-6 p-3 bg-surface-container-lowest border border-primary/20">
+<div class="flex justify-between items-center mb-2">
+<span class="text-[10px] font-bold font-label text-primary uppercase tracking-widest">Senses &amp; Perception</span>
+<span class="text-sm font-black font-headline text-primary">+18</span>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-primary/10 text-primary text-[8px] font-bold font-label uppercase">Darkvision 60ft</span>
+<span class="px-2 py-1 bg-primary/10 text-primary text-[8px] font-bold font-label uppercase">Cyber-Sense</span>
+</div>
+</div>
+<!-- Action HUD -->
+<div class="space-y-3">
+<div class="flex justify-between items-center text-[10px] font-label text-secondary uppercase tracking-tighter opacity-70">
+<span>Action Economy</span>
+<div class="flex gap-1">
+<div class="w-3 h-3 bg-primary"></div>
+<div class="w-3 h-3 bg-primary"></div>
+<div class="w-3 h-3 bg-surface-container-highest"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-3 border-l border-primary/30 flex justify-between items-center">
+<span class="text-xs font-bold font-label uppercase">Logic Bomb [Spell]</span>
+<span class="text-tertiary text-xs font-black">2 Actions</span>
+</div>
+<div class="bg-surface-container-lowest p-3 border-l border-primary/30 flex justify-between items-center">
+<span class="text-xs font-bold font-label uppercase">Laser Pistol [Strike]</span>
+<span class="text-primary text-xs font-black">1 Action</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Panel 2: Selected Target Details -->
+<div class="flex flex-col gap-4">
+<h2 class="text-xs font-bold font-label text-tertiary uppercase tracking-widest flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="target">target</span>
+                        Selected Target
+                    </h2>
+<div class="corner-cut bg-surface-container-high p-6 border-l-2 border-tertiary relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-tertiary/40 to-transparent"></div>
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="text-2xl font-black font-headline text-tertiary tracking-tight uppercase leading-none">Void-Warden Sentinel</h3>
+<p class="text-[10px] text-secondary font-label tracking-widest uppercase mt-1">Level 10 Elite • Construct • Void</p>
+<!-- Traits Tag Row -->
+<div class="flex flex-wrap gap-1.5 mt-3">
+<span class="px-2 py-0.5 bg-tertiary/20 border border-tertiary/30 text-[9px] font-bold font-label text-tertiary uppercase">Construct</span>
+<span class="px-2 py-0.5 bg-tertiary/20 border border-tertiary/30 text-[9px] font-bold font-label text-tertiary uppercase">Void</span>
+<span class="px-2 py-0.5 bg-tertiary/20 border border-tertiary/30 text-[9px] font-bold font-label text-tertiary uppercase">Automaton</span>
+</div>
+</div>
+<div class="text-right">
+<div class="text-xs font-bold font-label text-tertiary uppercase">Current HP</div>
+<div class="text-3xl font-black font-headline text-tertiary">112 <span class="text-sm font-normal opacity-50">/ 120</span></div>
+</div>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-3 gap-2 mb-6">
+<div class="bg-surface-container-highest p-3 flex flex-col items-center">
+<span class="text-[10px] font-label text-secondary uppercase opacity-60">Armor Class</span>
+<span class="text-xl font-black font-headline text-tertiary">31</span>
+</div>
+<div class="bg-surface-container-highest p-3 flex flex-col items-center">
+<span class="text-[10px] font-label text-secondary uppercase opacity-60">Fortitude</span>
+<span class="text-xl font-black font-headline text-tertiary">+22</span>
+</div>
+<div class="bg-surface-container-highest p-3 flex flex-col items-center">
+<span class="text-[10px] font-label text-secondary uppercase opacity-60">Will Save</span>
+<span class="text-xl font-black font-headline text-tertiary">+15</span>
+</div>
+</div>
+<!-- Perception Panel -->
+<div class="mb-6 p-3 bg-surface-container-lowest border border-tertiary/20">
+<div class="flex justify-between items-center mb-2">
+<span class="text-[10px] font-bold font-label text-tertiary uppercase tracking-widest">Target Awareness</span>
+<span class="text-sm font-black font-headline text-tertiary">+20</span>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-tertiary/10 text-tertiary text-[8px] font-bold font-label uppercase">Tremorsense 30ft</span>
+<span class="px-2 py-1 bg-tertiary/10 text-tertiary text-[8px] font-bold font-label uppercase">Vacuum Seal</span>
+</div>
+</div>
+<!-- Combat Analysis -->
+<div class="space-y-2">
+<div class="text-[10px] font-bold font-label text-secondary uppercase tracking-widest opacity-60 mb-2">Active Conditions</div>
+<div class="flex flex-col gap-1">
+<div class="bg-tertiary-container text-on-tertiary-container p-2 flex justify-between items-center glow-tertiary">
+<span class="text-[10px] font-black uppercase">Vulnerability: Electricity</span>
+<span class="material-symbols-outlined text-sm" data-icon="priority_high">priority_high</span>
+</div>
+<div class="bg-surface-container-lowest p-2 border border-outline-variant/30 flex justify-between items-center">
+<span class="text-[10px] font-bold font-label uppercase text-secondary">Resistance: Physical 10</span>
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="shield">shield</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

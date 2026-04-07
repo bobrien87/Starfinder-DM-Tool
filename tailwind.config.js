@@ -1,0 +1,73 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  darkMode: "class",
+  theme: {
+    extend: {
+      "colors": {
+          "outline-variant": "#3b494c",
+          "surface-container-high": "#242a34",
+          "on-primary-container": "#00626e",
+          "on-secondary-fixed": "#0f1c2c",
+          "primary-fixed-dim": "#00daf3",
+          "on-primary-fixed-variant": "#004f58",
+          "inverse-on-surface": "#2a313b",
+          "surface-bright": "#333a44",
+          "primary-fixed": "#9cf0ff",
+          "error": "#ffb4ab",
+          "tertiary-fixed": "#ffdcc3",
+          "surface-dim": "#0d141d",
+          "surface-container-highest": "#2e353f",
+          "secondary-fixed": "#d6e4f9",
+          "secondary": "#bac8dc",
+          "on-secondary-fixed-variant": "#3a4859",
+          "on-primary-fixed": "#001f24",
+          "on-tertiary-fixed": "#2f1500",
+          "on-tertiary": "#4d2600",
+          "primary": "#c3f5ff",
+          "inverse-primary": "#006875",
+          "on-primary": "#00363d",
+          "tertiary-fixed-dim": "#ffb77d",
+          "on-secondary-container": "#a8b6ca",
+          "on-background": "#dce3f0",
+          "surface-container-lowest": "#080f18",
+          "on-tertiary-container": "#894800",
+          "on-surface": "#dce3f0",
+          "surface-container-low": "#151c26",
+          "secondary-container": "#3a4859",
+          "surface-container": "#19202a",
+          "outline": "#849396",
+          "background": "#0d141d",
+          "tertiary": "#ffe9da",
+          "secondary-fixed-dim": "#bac8dc",
+          "inverse-surface": "#dce3f0",
+          "primary-container": "#00e5ff",
+          "error-container": "#93000a",
+          "surface-tint": "#00daf3",
+          "on-tertiary-fixed-variant": "#6e3900",
+          "surface": "#0d141d",
+          "on-secondary": "#243141",
+          "on-error": "#690005",
+          "on-surface-variant": "#bac9cc",
+          "on-error-container": "#ffdad6",
+          "surface-variant": "#2e353f",
+          "tertiary-container": "#ffc598"
+      },
+      "borderRadius": {
+          "DEFAULT": "0px",
+          "lg": "0px",
+          "xl": "0px",
+          "full": "9999px"
+      },
+      "fontFamily": {
+          "headline": ["Space Grotesk"],
+          "body": ["Plus Jakarta Sans"],
+          "label": ["Space Grotesk"]
+      }
+    },
+  },
+  plugins: [],
+}
