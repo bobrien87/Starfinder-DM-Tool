@@ -277,5 +277,26 @@ export const CONDITIONS = {
     clearOnEncounterEnd: true,
     isBuff: true,
     modifiers: []
+  },
+  
+  // Starfinder 2e Specific Conditions
+  "Glitching": {
+    desc: "Your tech systems seize up or malfunction. When you attempt to use glitching equipment or act while glitching, you must succeed at a flat check (DC = 5 + your glitching value). On a critical success, reduce your glitching value by 1. On a failure, you take an item penalty equal to the glitching value to all checks and DCs.",
+    hasValue: true,
+    decayAtEndOfTurn: false,
+    clearOnEncounterEnd: true,
+    isBuff: false,
+    modifiers: [] // Handled via Flat Check penalty application manually by GMs or in automated penalty logic loops.
+  },
+  "Suppressed": {
+    desc: "You are pinned down by suppressing fire or area saturation. You take a -1 circumstance penalty to attack rolls and a -10-foot status penalty to all your Speeds.",
+    hasValue: false,
+    decayAtEndOfTurn: false, // Generally cleared manually or mapped to rounds.
+    clearOnEncounterEnd: true,
+    isBuff: false,
+    modifiers: [
+      { target: "attack_rolls", type: "circumstance", valueFn: () => -1 }
+      // Speeds require custom logic, skipped basic number modifier hook for now
+    ]
   }
 };

@@ -82,7 +82,7 @@ To track the Player Characters (PCs) playing in the campaign. Often attached as 
   - `class`: (Array)
   - `general`: (Array)
   - `skill`: (Array)
-- `spells`: (Array of Strings) Reference IDs to `spells` collection
+- `spellcasting`: (Array of Objects) Independent spellcasting entries, matching Creature schema structure (Focus, Innate, Prepared).
 - `conditions`: (Array of Objects) Persistent states tracked on standard encounters
   - `name`: (String)
   - `value`: (Number)
@@ -181,16 +181,27 @@ Non-player characters and monsters mapped to SF2e/PF2e statblocks.
   - `traits`: (Array of Strings) E.g., ["Reach", "Agile", "Tech"]
 
 **Offense: Magic & Tech Abilities**
-- `spellcasting`: (Object) Optional Spellcasting block
-  - `dc`: (Number) Spell DC
-  - `attack`: (Number) Spell Attack Roll
-  - `tradition`: (String) "Arcane", "Divine", "Primal", "Occult"
-  - `type`: (String) "Prepared", "Spontaneous", "Innate"
-  - `spellSlots`: (Array of Objects) E.g., `[{ level: 1, spellIds: ["spell_1", "spell_2"], slots: 3 }]`
-- `specialAbilities`: (Array of Objects) Actions, Reactions, Passives
+- `spellcasting`: (Array of Objects) Independent spellcasting entries (e.g. Focus, Innate, Prepared)
+  - `id`: (String) Random UI-generated string for array keying
+  - `name`: (String) e.g., "Innate Arcane Spells"
+  - `tradition`: (String) "Arcane", "Divine", "Primal", "Occult", "None"
+  - `type`: (String) "Prepared", "Spontaneous", "Innate", "Focus"
+  - `ability`: (String) "int", "wis", "cha"
+  - `proficiency`: (Number) 0=Untrained, 1=Trained, 2=Expert, 3=Master, 4=Legendary
+  - `dc`: (Number) Hardcoded override (Prioritized for NPCs)
+  - `attack`: (Number) Hardcoded override (Prioritized for NPCs)
+  - `spellsByLevel`: (Object) keys: 0 through 10
+    - `slots`: (Number) Max slots for this level (e.g., 3)
+    - `spells`: (Array of Strings) Spell IDs from the `spells` collection
+- `actions`: (Array of Objects) Active and reactive abilities
   - `name`: (String) E.g., "System Override"
-  - `actionCost`: (String) E.g., "2 Actions", "Reaction", "Passive"
+  - `actionCost`: (String) E.g., "1", "2", "3", "free", "reaction"
   - `description`: (String) Full text evaluation of the mechanic
+  - `traits`: (Array of Strings) E.g., ["Auditory", "Emotion"]
+- `passives`: (Array of Objects) Passive traits and auras
+  - `name`: (String) E.g., "Reactive Strike"
+  - `description`: (String) Full text evaluation of the mechanic
+  - `traits`: (Array of Strings) E.g., ["Tech"]
 
 **Inventory**
 - `items`: (Array of Strings) Reference IDs to `items` collection
@@ -209,7 +220,16 @@ Global compendium tracking SF2e spells and magical/tech powers.
 - `area`: (String) E.g., "20-foot burst", "30-foot cone"
 - `target`: (String)
 - `duration`: (String) E.g., "1 minute", "Sustained up to 1 minute"
+- `isSustained`: (Boolean) True if the spell requires an action to maintain
 - `savingThrow`: (String) E.g., "Basic Reflex DC"
+- `saveDegrees`: (Object - Optional) Pre-formatted evaluation text
+  - `criticalSuccess`: (String)
+  - `success`: (String)
+  - `failure`: (String)
+  - `criticalFailure`: (String)
+- `damage`: (String - Optional) E.g., "6d6 F", "1d4+1 force"
+- `trigger`: (String - Optional) Condition required for casting (common on reactions)
+- `requirements`: (String - Optional) Pre-requisites for casting
 - `description`: (String) Complete rules text
 - `traits`: (Array of Strings) E.g., ["Fire", "Concentrate", "Manipulate"]
 

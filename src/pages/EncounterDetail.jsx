@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useDatabase } from '../context/DatabaseContext';
 import { RARITY_COLORS } from '../utils/constants';
+import StatPill from '../components/StatPill';
 import InlineEditable from '../components/InlineEditable';
 import ConfirmModal from '../components/ConfirmModal';
 import Button from '../components/Button';
-import TraitFilterInput from '../components/TraitFilterInput';
 import CustomSelect from '../components/CustomSelect';
+import CustomMultiSelect from '../components/CustomMultiSelect';
 
 export default function EncounterDetail() {
   const { id } = useParams();
@@ -166,7 +167,7 @@ export default function EncounterDetail() {
 
   // --- XP & Threat Calculation ---
   const pcCombatants = (encounter.combatants || []).filter(c => c.type === 'PC');
-  const creatureCombatants = (encounter.combatants || []).filter(c => c.type === 'Creature');
+  const creatureCombatants = (encounter.combatants || []).filter(c => c.type === 'NPC' || c.type === 'Creature');
   
   const getPartyLevel = () => {
     if (pcCombatants.length === 0) return 1;
@@ -247,7 +248,7 @@ export default function EncounterDetail() {
 
   return (
     <>
-    <main className="ml-0 mt-0 p-6 h-full overflow-y-auto bg-surface flex flex-col gap-6">
+    <main className="ml-0 mt-0 p-6 h-full overflow-y-auto bg-transparent flex flex-col gap-6">
       <div className="flex justify-between items-end border-b border-outline-variant/30 pb-4">
         <div>
           <div className="flex items-center gap-4">
@@ -402,12 +403,12 @@ export default function EncounterDetail() {
                        Creatures
                    </h2>
                    <div className="text-[10px] font-bold text-secondary uppercase tracking-widest">
-                       Count: <span className="text-primary font-black ml-1">{(encounter.combatants || []).filter(c => c.type === 'Creature').length}</span>
+                       Count: <span className="text-primary font-black ml-1">{(encounter.combatants || []).filter(c => c.type === 'NPC' || c.type === 'Creature').length}</span>
                    </div>
                </div>
                
                <div className="flex flex-wrap gap-2">
-                   {(encounter.combatants || []).filter(c => c.type === 'Creature').map((c) => {
+                   {(encounter.combatants || []).filter(c => c.type === 'NPC' || c.type === 'Creature').map((c) => {
                        const baseDef = getEntity('creatures', c.refId);
                        return (
                            <div key={c.instanceId} className="inline-flex items-center gap-2 bg-surface-container-high border border-outline-variant/50 px-3 py-1 text-[10px] font-bold font-label uppercase tracking-widest group shadow-sm">
@@ -420,7 +421,7 @@ export default function EncounterDetail() {
                        );
                    })}
                </div>
-               {(encounter.combatants || []).filter(c => c.type === 'Creature').length === 0 && (
+               {(encounter.combatants || []).filter(c => c.type === 'NPC' || c.type === 'Creature').length === 0 && (
                    <span className="text-xs text-outline-variant italic opacity-70">No creatures assigned.</span>
                )}
            </div>
@@ -443,14 +444,15 @@ export default function EncounterDetail() {
                          className="w-full sm:min-w-[120px]"
                       />
                   </div>
-                  <div className="flex flex-col gap-1 w-full sm:w-auto flex-1 min-w-[250px]">
-                      <label className="text-[10px] text-secondary font-bold uppercase tracking-widest">Filter by Traits</label>
-                      <TraitFilterInput 
-                          selectedTraits={filterTraits} 
-                          onChange={setFilterTraits} 
-                          availableTraits={Array.from(new Set((creatures || []).flatMap(c => c.traits || []))).sort()} 
-                      />
-                  </div>
+                       <div className="flex flex-col gap-1 flex-1">
+                           <label className="text-[10px] text-secondary font-bold uppercase tracking-widest">Filter Traits</label>
+                           <CustomMultiSelect 
+                               value={filterTraits} 
+                               onChange={setFilterTraits} 
+                               options={Array.from(new Set((creatures || []).flatMap(c => c.traits || []))).sort()} 
+                               placeholder="e.g. humanoid..."
+                           />
+                       </div>
                   <div className="flex flex-col gap-1 w-full sm:w-auto">
                       <label className="text-[10px] text-secondary font-bold uppercase tracking-widest">Level Range</label>
                       <div className="flex items-center gap-2">
@@ -493,8 +495,8 @@ export default function EncounterDetail() {
                             <span className="text-secondary/70 font-bold text-xs uppercase tracking-widest whitespace-nowrap">Level {c.level}</span>
                         </div>
                         <div className="flex flex-wrap gap-1">
-                            <span className={`px-2 py-[1px] border text-[9px] font-bold font-label uppercase ${rarityColor}`}>{actualRarity}</span>
-                            {c.traits?.filter(t => !['common', 'uncommon', 'rare', 'unique'].includes(t.toLowerCase())).map((t, i) => <span key={i} className="px-2 py-[1px] bg-primary/10 border border-primary/20 text-[9px] font-bold font-label text-primary uppercase">{t}</span>)}
+                            <StatPill variant="custom" size="xs" className={`${rarityColor} border`}>{actualRarity}</StatPill>
+                            {c.traits?.filter(t => !['common', 'uncommon', 'rare', 'unique'].includes(t.toLowerCase())).map((t, i) => <StatPill key={i} size="xs">{t}</StatPill>)}
                         </div>
                     </div>
 

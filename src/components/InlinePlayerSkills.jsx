@@ -3,6 +3,8 @@ import { useDatabase } from '../context/DatabaseContext';
 import { useDice } from '../context/DiceContext';
 import InlineEditable from './InlineEditable';
 import { GAME_SKILLS, PROFICIENCY_COLORS } from '../utils/constants';
+import SingleD20Icon from './SingleD20Icon';
+import StatPill from './StatPill';
 
 export default function InlinePlayerSkills({ skills = {}, collectionName, entityId, isEditing, formatMod }) {
     const { updateEntity } = useDatabase();
@@ -68,14 +70,14 @@ export default function InlinePlayerSkills({ skills = {}, collectionName, entity
                                 </span>
                             )}
                             
-                            <span className="text-xs font-bold text-primary uppercase flex items-center">
-                                {isEditing && (
+                            {isEditing && (
+                                <span className="text-[10px] font-bold text-primary uppercase flex items-center">
                                     <button onClick={() => handleRemove(skill)} className="text-red-400 hover:text-red-300 font-bold mr-2 text-[14px] leading-none shrink-0" title="Delete Skill">
                                         ×
                                     </button>
-                                )}
-                                {skill}
-                            </span>
+                                    {skill}
+                                </span>
+                            )}
                         </div>
 
                         {isEditing ? (
@@ -91,7 +93,7 @@ export default function InlinePlayerSkills({ skills = {}, collectionName, entity
                                 />
                             </div>
                         ) : (
-                            <button onClick={() => rollDice(skill, mod)} className="text-sm font-black text-primary hover:bg-primary/20 px-2 rounded transition-colors cursor-pointer">{formatMod(mod)}</button>
+                            <StatPill label={skill} onClick={() => rollDice(skill, mod)}>{formatMod(mod)}</StatPill>
                         )}
                     </div>
                 );

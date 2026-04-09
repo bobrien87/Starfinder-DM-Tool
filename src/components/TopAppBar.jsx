@@ -7,11 +7,11 @@ export default function TopAppBar() {
   const path = location.pathname;
 
   return (
-    <header className="bg-[#0d141d] dark:bg-[#0d141d] flex justify-between items-center w-full px-6 h-16 docked full-width top-0 border-b-2 border-[#c3f5ff]/15 z-50 shrink-0 relative">
+    <header className="bg-[#0d141d] dark:bg-[#0d141d] flex justify-between items-center w-full px-6 h-24 docked full-width top-0 border-b-2 border-[#c3f5ff]/15 z-50 shrink-0 relative">
       
       {/* Left: Logo */}
       <div className="flex items-center">
-        <img src={logo} alt="Starfinder GM Assistant" className="h-12 w-auto brightness-200" />
+        <img src={logo} alt="Starfinder GM Assistant" className="h-[72px] w-auto brightness-200" />
       </div>
 
       {/* Center: Navigation */}

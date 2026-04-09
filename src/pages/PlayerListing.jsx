@@ -44,7 +44,7 @@ export default function PlayerListing() {
   };
 
   return (
-    <main className="ml-0 mt-0 p-6 h-full overflow-y-auto bg-surface flex flex-col gap-6">
+    <main className="ml-0 mt-0 p-6 h-full overflow-y-auto bg-transparent flex flex-col gap-6">
       <div className="flex justify-between items-end border-b border-outline-variant/30 pb-4">
         <div>
           <h1 className="text-3xl font-black font-headline text-primary tracking-tighter uppercase">Players</h1>
@@ -69,7 +69,8 @@ export default function PlayerListing() {
         {players.map((p) => (
           <Link to={`/players/${p.id}`} key={p.id} className="corner-cut bg-surface-container-high p-4 border-l-2 border-primary relative flex items-center justify-between gap-6 hover:bg-surface-container-highest transition-colors group cursor-pointer block">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 to-transparent"></div>
-            
+
+
             <div className="flex-1">
               <h3 className="text-xl font-black font-headline text-primary tracking-tight uppercase leading-none group-hover:text-white transition-colors">{p.characterName}</h3>
               <p className="text-[10px] text-secondary font-label tracking-widest uppercase mt-1">Level {p.level} • {p.ancestry} • {p.class}</p>

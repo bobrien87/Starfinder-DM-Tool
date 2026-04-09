@@ -3,6 +3,8 @@ import { useDatabase } from '../context/DatabaseContext';
 import { useDice } from '../context/DiceContext';
 import InlineEditable from './InlineEditable';
 import { GAME_SKILLS } from '../utils/constants';
+import SingleD20Icon from './SingleD20Icon';
+import StatPill from './StatPill';
 
 export default function InlineSkillMap({ skills = {}, collectionName, entityId, isEditing, formatMod }) {
     const { updateEntity } = useDatabase();
@@ -51,27 +53,26 @@ export default function InlineSkillMap({ skills = {}, collectionName, entityId, 
         <div className="flex flex-col gap-1">
             {Object.entries(safeSkills).map(([skill, mod]) => (
                 <div key={skill} className="zebra-stripe p-2 flex justify-between items-center group">
-                    <span className="text-xs font-bold text-primary uppercase flex items-center">
-                        {isEditing && (
-                            <button onClick={() => handleRemove(skill)} className="text-red-400 hover:text-red-300 font-bold mr-2 text-xs leading-none">
-                                ×
-                            </button>
-                        )}
-                        {skill}
-                    </span>
-
                     {isEditing ? (
-                        <InlineEditable 
-                            type="number" 
-                            value={mod} 
-                            collectionName={collectionName} 
-                            entityId={entityId} 
-                            isEditing={isEditing} 
-                            className="w-12 px-1 text-center mx-1 font-black text-primary text-sm bg-surface-container border border-primary/30 rounded"
-                            onSave={(val) => updateSkillVal(skill, val)}
-                        />
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-primary uppercase flex items-center">
+                                <button onClick={() => handleRemove(skill)} className="text-red-400 hover:text-red-300 font-bold mr-2 text-xs leading-none">
+                                    ×
+                                </button>
+                                {skill}
+                            </span>
+                            <InlineEditable 
+                                type="number" 
+                                value={mod} 
+                                collectionName={collectionName} 
+                                entityId={entityId} 
+                                isEditing={isEditing} 
+                                className="w-12 px-1 text-center font-black text-primary text-sm bg-surface-container border border-primary/30 rounded"
+                                onSave={(val) => updateSkillVal(skill, val)}
+                            />
+                        </div>
                     ) : (
-                        <button onClick={() => rollDice(skill, mod)} className="text-sm font-black text-primary hover:bg-primary/20 px-2 rounded transition-colors cursor-pointer">{formatMod(mod)}</button>
+                        <StatPill label={skill} onClick={() => rollDice(skill, mod)}>{formatMod(mod)}</StatPill>
                     )}
                 </div>
             ))}

@@ -5,7 +5,12 @@ import { useDatabase } from '../context/DatabaseContext';
 import { CONDITIONS } from '../data/conditions';
 import { getModifiedStat } from '../utils/modifiers';
 import ConditionsModal from './ConditionsModal';
+import ActionIcon from './ActionIcon';
 import Tooltip from './Tooltip';
+import { DEFAULT_AVATAR } from '../utils/constants';
+import StatPill from './StatPill';
+import StrikeActionGroup from './StrikeActionGroup';
+import SingleD20Icon from './SingleD20Icon';
 
 function EntityCard({ label, turnId, encounter, isTarget = false }) {
     const { getEntity, updateEntity } = useDatabase();
@@ -110,7 +115,7 @@ function EntityCard({ label, turnId, encounter, isTarget = false }) {
               <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r to-transparent ${isTarget ? 'from-secondary/40' : 'from-primary/40'}`}></div>
               
               {/* Header / Traits / HP */}
-              <div className="flex justify-between items-start mb-6">
+              <div className="flex justify-between items-start mb-6 gap-6">
                 <div className="min-w-0 pr-4 flex-1">
                   <h3 className={`text-2xl font-black font-headline tracking-tight uppercase leading-none truncate ${isTarget ? 'text-secondary' : 'text-primary'}`}>{activeCombatant.name}</h3>
                   <p className={`text-[10px] font-label tracking-widest uppercase mt-1 mb-2 ${isTarget ? 'text-secondary/60' : 'text-secondary'}`}>Level {baseEntity.level || '?'} • {isPC ? 'Player Character' : 'Creature'}</p>
@@ -118,7 +123,7 @@ function EntityCard({ label, turnId, encounter, isTarget = false }) {
                   {/* HP Progress Bar */}
                   <div className="w-full h-1.5 bg-surface-container-lowest mb-3 overflow-hidden">
                       <div 
-                         className={`h-full transition-all duration-500 ease-out ${isLowHp ? 'bg-error animate-pulse shadow-[0_0_10px_rgba(255,100,100,0.8)]' : isTarget ? 'bg-secondary/60 shadow-[0_0_8px_rgba(42,204,185,0.4)]' : 'bg-primary/60 shadow-[0_0_8px_rgba(255,165,0,0.4)]'}`} 
+                         className={`h-full transition-all duration-500 ease-out ${isLowHp ? 'bg-error animate-pulse shadow-[0_0_10px_rgba(255,100,100,0.8)]' : isTarget ? 'bg-primary-container/50' : 'bg-primary-container'}`} 
                          style={{ width: `${hpPercent}%` }}
                       ></div>
                   </div>
@@ -161,7 +166,7 @@ function EntityCard({ label, turnId, encounter, isTarget = false }) {
                      const def = CONDITIONS[cond.name];
                      return (
                          <Tooltip key={i} content={def?.desc}>
-                             <div className={`flex items-center gap-1 px-2 py-1 bg-surface border border-outline-variant/30 corner-cut group`}>
+                             <div className={`flex items-center gap-1 px-2 py-1 bg-surface border border-outline-variant/30 rounded group`}>
                                 <span className={`text-[10px] font-bold font-label uppercase tracking-widest ${def?.isBuff ? 'text-success' : 'text-error'}`}>{cond.name} <span className="opacity-70">{def?.hasValue && cond.value}</span></span>
                                 
                                 {!isTarget && (
@@ -202,15 +207,15 @@ function EntityCard({ label, turnId, encounter, isTarget = false }) {
               <div className="grid grid-cols-3 gap-2 mb-6 shrink-0">
                 <div className={`bg-surface-container-highest p-3 flex flex-col items-center border border-outline-variant/10 ${fortRes.delta < 0 ? 'border-error/50 bg-error/5' : ''}`}>
                   <span className="text-[10px] font-label text-secondary uppercase opacity-60">Fortitude</span>
-                  <button onClick={() => rollDice(`${activeCombatant.name} Fortitude`, fortRes.final, fortRes.causes)} className={`text-xl font-black font-headline hover:bg-primary/20 px-2 rounded transition-colors cursor-pointer ${fortRes.delta < 0 ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={fortRes.causes.join(', ')}>{formatMod(fortRes.final)}</button>
+                  <button onClick={() => rollDice(`${activeCombatant.name} Fortitude`, fortRes.final, fortRes.causes)} className={`group flex items-center justify-center gap-1.5 text-xl font-black font-headline hover:bg-primary/20 px-2 rounded transition-colors cursor-pointer ${fortRes.delta < 0 ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={fortRes.causes.join(', ')}><SingleD20Icon className="w-5 h-5 group-hover:animate-spin opacity-80 shrink-0" />{formatMod(fortRes.final)}</button>
                 </div>
                 <div className={`bg-surface-container-highest p-3 flex flex-col items-center border border-outline-variant/10 ${refRes.delta < 0 ? 'border-error/50 bg-error/5' : ''}`}>
                   <span className="text-[10px] font-label text-secondary uppercase opacity-60">Reflex</span>
-                  <button onClick={() => rollDice(`${activeCombatant.name} Reflex`, refRes.final, refRes.causes)} className={`text-xl font-black font-headline hover:bg-primary/20 px-2 rounded transition-colors cursor-pointer ${refRes.delta < 0 ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={refRes.causes.join(', ')}>{formatMod(refRes.final)}</button>
+                  <button onClick={() => rollDice(`${activeCombatant.name} Reflex`, refRes.final, refRes.causes)} className={`group flex items-center justify-center gap-1.5 text-xl font-black font-headline hover:bg-primary/20 px-2 rounded transition-colors cursor-pointer ${refRes.delta < 0 ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={refRes.causes.join(', ')}><SingleD20Icon className="w-5 h-5 group-hover:animate-spin opacity-80 shrink-0" />{formatMod(refRes.final)}</button>
                 </div>
                 <div className={`bg-surface-container-highest p-3 flex flex-col items-center border border-outline-variant/10 ${willRes.delta < 0 ? 'border-error/50 bg-error/5' : ''}`}>
                   <span className="text-[10px] font-label text-secondary uppercase opacity-60">Will</span>
-                  <button onClick={() => rollDice(`${activeCombatant.name} Will Save`, willRes.final, willRes.causes)} className={`text-xl font-black font-headline hover:bg-primary/20 px-2 rounded transition-colors cursor-pointer ${willRes.delta < 0 ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={willRes.causes.join(', ')}>{formatMod(willRes.final)}</button>
+                  <button onClick={() => rollDice(`${activeCombatant.name} Will Save`, willRes.final, willRes.causes)} className={`group flex items-center justify-center gap-1.5 text-xl font-black font-headline hover:bg-primary/20 px-2 rounded transition-colors cursor-pointer ${willRes.delta < 0 ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={willRes.causes.join(', ')}><SingleD20Icon className="w-5 h-5 group-hover:animate-spin opacity-80 shrink-0" />{formatMod(willRes.final)}</button>
                 </div>
               </div>
 
@@ -228,20 +233,24 @@ function EntityCard({ label, turnId, encounter, isTarget = false }) {
                       return (
                        <div key={i} className={`bg-surface-container-lowest p-3 border-l-2 flex justify-between items-center group shrink-0 ${isAtkPenalized ? 'border-error/50 bg-error/5' : isTarget ? 'border-secondary/50' : 'border-primary/50'}`}>
                         <div className="flex-1 min-w-0 pr-2">
-                            <span className={`font-bold text-sm uppercase block truncate ${isAtkPenalized ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={atkRes.causes.join(', ')}>{name}</span>
+                            <span className={`font-bold text-sm uppercase flex items-center truncate ${isAtkPenalized ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={atkRes.causes.join(', ')}>
+                                {atk.action && atk.action !== "" && <ActionIcon action={atk.action} className="h-[1.2em] w-auto inline-block align-middle mr-1.5 shrink-0" />}
+                                {name}
+                            </span>
                             <div className="flex flex-wrap gap-1 mt-1">
                                 {traits.map((t, idx) => (
-                                    <span key={idx} className={`px-1.5 py-[1px] text-[8px] font-bold uppercase ${isTarget ? 'bg-secondary/10 text-secondary' : 'bg-primary/10 text-primary'}`}>{t}</span>
+                                    <StatPill key={idx} size="xs" variant={isTarget ? "secondary" : "primary"}>{t}</StatPill>
                                 ))}
                             </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row items-center gap-2 shrink-0">
-                            <div className="flex items-center gap-1 shrink-0">
-                                <button onClick={() => rollDice(`${name} Attack`, atkRes.final, atkRes.causes)} className={`text-xs font-bold bg-surface border border-transparent rounded py-1 px-2 hover:bg-primary hover:text-black transition-all cursor-pointer block ${isAtkPenalized ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`}>{formatMod(atkRes.final)} <span className="text-[9px] font-bold uppercase ml-1">Strike</span></button>
-                                <button onClick={() => rollDice(`${name} Attack`, atkRes.final - (traits.includes('Agile') ? 4 : 5), atkRes.causes)} className={`text-[10px] font-bold bg-surface border border-outline-variant/30 rounded py-1 px-2 hover:bg-primary hover:text-black transition-all cursor-pointer ${isAtkPenalized ? 'text-error/80' : isTarget ? 'text-secondary/80' : 'text-primary/80'}`}>{formatMod(atkRes.final - (traits.includes('Agile') ? 4 : 5))}</button>
-                            </div>
-                            <button onClick={() => rollDamage(name, damage)} className={`text-[10px] font-bold tracking-widest uppercase border rounded py-1 px-2 transition-all cursor-pointer shadow-sm min-w-[50px] ${isTarget ? 'text-secondary border-secondary/40 bg-secondary/10 hover:bg-secondary/30 hover:text-white' : 'text-primary border-primary/40 bg-primary/10 hover:bg-primary/30 hover:text-white'}`}>{damage}</button>
-                        </div>
+                        <StrikeActionGroup 
+                            name={name} 
+                            attackBonus={atkRes.final} 
+                            damage={damage} 
+                            traits={traits} 
+                            causes={atkRes.causes} 
+                            theme={isAtkPenalized ? 'error' : isTarget ? 'secondary' : 'primary'} 
+                        />
                        </div>
                       )
                   })}

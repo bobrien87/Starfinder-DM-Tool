@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useDatabase } from '../context/DatabaseContext';
 import { useDice } from '../context/DiceContext';
 import InlineEditable from './InlineEditable';
-import InlineStringArray from './InlineStringArray';
+import InlineTraitValueEditor from './InlineTraitValueEditor';
+import StrikeActionGroup from './StrikeActionGroup';
+import ActionIcon from './ActionIcon';
 import { WEAPON_TRAITS } from '../utils/constants';
 
 export default function InlineCreatureAttacks({ attacks = [], entityId, isEditing, formatMod }) {
@@ -52,75 +54,92 @@ export default function InlineCreatureAttacks({ attacks = [], entityId, isEditin
     }
 
     return (
-        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-2">
             {safeAttacks.map((atk, i) => (
-                <div key={i} className="bg-surface-container-highest p-4 flex flex-col justify-between border-l-2 border-primary/50 group hover:border-primary transition-colors">
+                <div key={i} className="bg-surface-container-highest p-2.5 px-3 flex items-center justify-between gap-3 border-l-2 border-primary/50 group hover:border-primary transition-colors min-h-[44px]">
                     
-                    <div className="flex justify-between items-start mb-2">
-                        <div className="flex-grow">
-                            {/* Weapon Name */}
-                            <span className="font-bold text-sm text-primary uppercase block">
-                                <InlineEditable value={atk.weapon} collectionName="creatures" entityId={entityId} isEditing={isEditing} onSave={(val) => updateAttackField(i, 'weapon', val)} /> 
-                                <span className="text-[10px] text-secondary opacity-60 normal-case ml-2">
-                                    (<InlineEditable value={atk.type} collectionName="creatures" entityId={entityId} isEditing={isEditing} onSave={(val) => updateAttackField(i, 'type', val)} />)
-                                </span>
+                    {/* Left: Name and Traits */}
+                    <div className="flex items-center gap-2 flex-grow min-w-[150px]">
+                        <span className="font-bold text-sm text-primary uppercase whitespace-nowrap flex items-center">
+                            {isEditing ? (
+                                <select 
+                                    value={atk.action || "1"} 
+                                    onChange={(e) => updateAttackField(i, 'action', e.target.value)}
+                                    className="bg-surface-container border border-primary/40 rounded px-1 py-0.5 outline-none focus:border-primary text-xs text-primary cursor-pointer hover:bg-surface-container-high transition-colors appearance-none text-center mr-2 h-6"
+                                    title="Action Cost"
+                                >
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="free">F</option>
+                                    <option value="reaction">R</option>
+                                    <option value="">-</option>
+                                </select>
+                            ) : (
+                                atk.action && atk.action !== "" ? <ActionIcon action={atk.action} className="h-[1.2em] w-auto inline-block align-middle mr-1.5 text-primary" /> : null
+                            )}
+                            <InlineEditable value={atk.weapon} collectionName="creatures" entityId={entityId} isEditing={isEditing} onSave={(val) => updateAttackField(i, 'weapon', val)} /> 
+                            <span className="text-xs text-secondary opacity-60 normal-case ml-2 flex items-center font-normal">
+                                (
+                                {isEditing ? (
+                                    <select 
+                                        value={atk.type || "Melee"} 
+                                        onChange={(e) => updateAttackField(i, 'type', e.target.value)}
+                                        className="bg-surface-container border-2 border-primary/40 rounded px-2 py-0.5 mx-1 outline-none focus:border-primary text-xs text-primary cursor-pointer hover:bg-surface-container-high transition-colors appearance-none pr-6 relative"
+                                        style={{ backgroundImage: "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23C3F5FF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E\")", backgroundPosition: "right 0.2rem center", backgroundRepeat: "no-repeat", backgroundSize: "1.2em 1.2em" }}
+                                    >
+                                        <option value="Melee">Melee</option>
+                                        <option value="Ranged">Ranged</option>
+                                    </select>
+                                ) : (
+                                    atk.type || "Melee"
+                                )}
+                                )
                             </span>
+                        </span>
 
-                            {/* Traits */}
-                            <div className="flex flex-wrap gap-1 mt-2 mb-1">
-                                <InlineStringArray 
-                                    values={atk.traits} 
-                                    collectionName="creatures" 
-                                    entityId={entityId} 
-                                    isEditing={isEditing} 
-                                    pillClass="px-1.5 py-[1px] bg-primary/10 text-[9px] font-bold text-primary uppercase"
-                                    options={WEAPON_TRAITS}
-                                    onSaveValue={(val) => updateAttackField(i, 'traits', val)}
-                                />
-                            </div>
+                        {/* Traits */}
+                        <div className="flex flex-wrap gap-1">
+                            <InlineTraitValueEditor 
+                                values={atk.traits} 
+                                collectionName="creatures" 
+                                entityId={entityId} 
+                                isEditing={isEditing} 
+                                options={WEAPON_TRAITS}
+                                onSaveValue={(val) => updateAttackField(i, 'traits', val)}
+                            />
                         </div>
-
-                        {isEditing && (
-                            <button onClick={() => handleRemove(i)} className="text-red-400/50 hover:text-red-400 font-bold text-xs p-1 ml-2 cursor-pointer transition-colors mt-[-4px]">
-                                <span className="material-symbols-outlined text-[16px]">delete</span>
-                            </button>
-                        )}
                     </div>
 
-                    <div className="flex items-center gap-2 mt-auto pt-2 border-t border-outline-variant/10">
-                        <div className="flex items-center gap-1 shrink-0 rounded">
-                            {/* Bonuses */}
-                            {isEditing ? (
-                                <div className="flex items-center text-xs font-bold text-primary py-1 px-1 bg-surface-container border border-primary/30 rounded">
-                                    Atk Bonus: <InlineEditable type="number" value={atk.bonus} collectionName="creatures" entityId={entityId} isEditing={isEditing} className="ml-1 px-1 w-12 text-center" onSave={(val) => updateAttackField(i, 'bonus', val)} />
-                                </div>
-                            ) : (
-                                <button onClick={() => rollDice(`${atk.weapon} Attack`, atk.bonus)} className="text-xs font-bold text-primary bg-surface border border-primary/50 rounded py-1 px-2 hover:bg-primary hover:text-black transition-all cursor-pointer shadow-[0_0_10px_rgba(195,245,255,0.05)] hover:shadow-[0_0_15px_rgba(195,245,255,0.4)] block">{formatMod(atk.bonus)} <span className="text-[9px] font-bold uppercase ml-1">Strike</span></button>
-                            )}
-                            
-                            {!isEditing && (
-                                <>
-                                    <button onClick={() => rollDice(`${atk.weapon} Attack`, atk.bonus - (atk.traits?.includes('Agile') ? 4 : 5))} className="text-[10px] font-bold text-primary/80 bg-surface border border-primary/30 rounded py-1 px-2 hover:bg-primary hover:text-black transition-all cursor-pointer">{formatMod(atk.bonus - (atk.traits?.includes('Agile') ? 4 : 5))}</button>
-                                    <button onClick={() => rollDice(`${atk.weapon} Attack`, atk.bonus - (atk.traits?.includes('Agile') ? 8 : 10))} className="text-[10px] font-bold text-secondary bg-surface border border-outline-variant/30 rounded py-1 px-2 hover:bg-primary hover:text-black transition-all cursor-pointer">{formatMod(atk.bonus - (atk.traits?.includes('Agile') ? 8 : 10))}</button>
-                                </>
-                            )}
-                        </div>
-
-                        {/* Damage */}
+                    {/* Right: Buttons */}
+                    <div className="flex items-center gap-3 shrink-0 ml-4 h-[24px]">
                         {isEditing ? (
-                            <div className="text-[10px] text-primary font-bold tracking-widest uppercase border border-primary/40 bg-primary/10 rounded py-1 px-2 shadow-sm ml-auto shrink-0 flex items-center">
-                                Dmg: <InlineEditable value={atk.damage} collectionName="creatures" entityId={entityId} isEditing={isEditing} className="ml-1 min-w-[40px]" onSave={(val) => updateAttackField(i, 'damage', val)} />
+                            <div className="flex items-center gap-1 shrink-0">
+                                <div className="flex items-center text-xs font-bold text-primary py-1 px-1 bg-surface-container border border-primary/30 rounded">
+                                    Atk Bonus: <InlineEditable type="number" value={atk.bonus} collectionName="creatures" entityId={entityId} isEditing={isEditing} className="ml-1 px-1 !w-6 !min-w-[24px] text-center" onSave={(val) => updateAttackField(i, 'bonus', val)} />
+                                </div>
+                                <div className="text-[10px] text-primary font-bold tracking-widest uppercase border border-primary/40 bg-primary/10 rounded py-1 px-2 shadow-sm shrink-0 flex items-center">
+                                    Dmg: <InlineEditable value={atk.damage} collectionName="creatures" entityId={entityId} isEditing={isEditing} className="ml-1 min-w-[40px]" onSave={(val) => updateAttackField(i, 'damage', val)} />
+                                </div>
+                                <button onClick={() => handleRemove(i)} className="text-red-400/50 hover:text-red-400 font-bold text-xs p-1 ml-1 cursor-pointer transition-colors shrink-0">
+                                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                                </button>
                             </div>
                         ) : (
-                            <button onClick={() => rollDamage(atk.weapon, atk.damage)} className="text-[10px] text-primary font-bold tracking-widest uppercase border border-primary/40 bg-primary/10 rounded py-1 px-2 hover:bg-primary/30 hover:text-white transition-all cursor-pointer shadow-sm ml-auto shrink-0">{atk.damage}</button>
+                            <StrikeActionGroup 
+                                name={atk.weapon} 
+                                attackBonus={atk.bonus} 
+                                damage={atk.damage} 
+                                traits={atk.traits} 
+                            />
                         )}
                     </div>
                 </div>
             ))}
             
             {isEditing && (
-                <button onClick={handleAdd} disabled={isAdding} className="bg-surface-container-highest border-2 border-dashed border-primary/40 p-4 flex items-center justify-center text-primary font-bold hover:bg-primary/10 hover:border-primary transition-all rounded opacity-60 hover:opacity-100 min-h-[120px]">
-                    {isAdding ? 'Adding...' : '+ Add Target Strike'}
+                <button onClick={handleAdd} disabled={isAdding} className="col-span-full bg-surface-container-highest border-2 border-primary/40 p-2 flex items-center justify-center text-primary font-bold hover:bg-primary/10 hover:border-primary transition-all rounded py-1.5 opacity-60 hover:opacity-100 mt-2">
+                    {isAdding ? 'Adding...' : '+ Add Attack'}
                 </button>
             )}
         </div>

@@ -1,3 +1,5 @@
+export const DEFAULT_AVATAR = "https://lh3.googleusercontent.com/aida-public/AB6AXuAUESglkJuj-oaFo6pfAClJaamv5ijOb7MlRAZNp1CBVGKv2-9hzRn9tLpi27CS3O3ghq0p7Ubub-6dfka0CUC4XwSYqJ2I_vhWUpkB4jffRkxUZKv7e530UpFeV0f9uRsZOCjjM8xWvxzjZZ6jS31gNyNWib6Vt_FKV4sFV-XWWRNKi9v4wVqHbmV9mPTBhB2TFF7rN5VlsSiw2WQAfIu-d3omVy1uax55Mj3yUhJWk9wCxawj4UEOwmRFTPjIPcEwVxtS0q04aQ";
+
 export const WEAPON_TRAITS = [
   "Agile", "Analog", "Archaic", "Area", "Automatic", "Block", 
   "Brutal", "Capacity", "Concealable", "Deadly", "Deflect", 
@@ -5,6 +7,16 @@ export const WEAPON_TRAITS = [
   "Injection", "Nonlethal", "Parry", "Propulsive", "Reach", 
   "Reload", "Shove", "Sweep", "Tech", "Thrown", "Trip", 
   "Two-Hand", "Unarmed", "Unwieldy", "Volley"
+];
+
+export const ABILITY_TRAITS = [
+  "Acid", "Arcane", "Auditory", "Aura", "Chaotic", "Cold", "Concentrate", 
+  "Construct", "Darkness", "Death", "Disease", "Divine", "Electricity", 
+  "Emotion", "Evil", "Fear", "Fire", "Force", "Good", "Healing", 
+  "Illusion", "Incapacitation", "Lawful", "Light", "Linguistic", "Magical", 
+  "Manipulate", "Mental", "Move", "Necromancy", "Occult", "Olfactory", 
+  "Poison", "Polymorph", "Primal", "Sonic", "Tech", "Teleportation", 
+  "Visual", "Vitality", "Void"
 ];
 
 export const GAME_SKILLS = [

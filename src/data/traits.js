@@ -1,0 +1,41 @@
+export const SENSES = [
+    "Darkvision",
+    "Greater Darkvision",
+    "Low-light vision",
+    "Blindsense (imprecise)",
+    "Blindsight (precise)",
+    "Tremorsense",
+    "Scent (imprecise)",
+    "Lifesense",
+    "Motion sense",
+    "Thoughtsense"
+];
+
+export const LANGUAGES = [
+    "Common",
+    "Aklo",
+    "Celestial",
+    "Draconic",
+    "Dwarven",
+    "Elven",
+    "Goblin",
+    "Halfling",
+    "Infernal",
+    "Jotun",
+    "Orcish",
+    "Sylvan",
+    "Undercommon",
+    "Shirren",
+    "Vesk",
+    "Ysoki",
+    "Kasatha",
+    "Lashunta",
+    "Triaxian",
+    "Eoxian",
+    "Vercite",
+    "Brethedan",
+    "Nuar",
+    "Sign Language",
+    "Akitonian",
+    "Castrovelian"
+];

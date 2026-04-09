@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import CustomMultiSelect from './CustomMultiSelect';
 
 export default function ItemEdit({ item, onSave, onCancel, onDelete }) {
   const [formData, setFormData] = useState({
@@ -8,7 +9,7 @@ export default function ItemEdit({ item, onSave, onCancel, onDelete }) {
     bulk: item.bulk || 'L',
     price: item.price || 0,
     description: item.description || '',
-    traits: (item.traits || []).join(', '),
+    traits: item.traits || [],
     weaponData: item.weaponData || {
       damage: "1d6 P", category: "Simple", group: "Projectile", range: "30 ft.", capacity: 10, usage: 1, reload: "1 Use"
     },
@@ -43,7 +44,7 @@ export default function ItemEdit({ item, onSave, onCancel, onDelete }) {
 
   const handleSaveWrapper = () => {
     // Prep final payload
-    const payload = { ...formData, traits: formData.traits.split(',').map(t => t.trim()).filter(Boolean) };
+    const payload = { ...formData };
     
     // Purge irrelevant data payloads depending on type
     if (payload.type !== 'Weapon') delete payload.weaponData;
@@ -108,9 +109,14 @@ export default function ItemEdit({ item, onSave, onCancel, onDelete }) {
             </label>
           </div>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-label uppercase tracking-widest text-secondary">Traits (Comma Separated)</span>
-            <input type="text" name="traits" value={formData.traits} onChange={handleChange} className="input-field" placeholder="e.g. Analog, Tech, Unwieldy" />
+          <label className="flex flex-col gap-1 z-30">
+            <span className="text-xs font-label uppercase tracking-widest text-secondary">Traits</span>
+            <CustomMultiSelect 
+                value={formData.traits} 
+                onChange={(newTraits) => setFormData(prev => ({ ...prev, traits: newTraits }))} 
+                options={["Analog", "Archais", "Block", "Operative", "Unwieldy", "Powered", "Tech", "Magic"]}
+                placeholder="e.g. Analog, Tech, Unwieldy"
+            />
           </label>
 
           <label className="flex flex-col gap-1">

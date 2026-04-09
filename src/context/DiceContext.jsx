@@ -26,18 +26,23 @@ export function DiceProvider({ children }) {
     if (!isOpen) setIsOpen(true);
   };
 
-  const rollDamage = (label, damageString) => {
+  const rollDamage = (label, damageString, isCritical = false) => {
     // Regex matches formats like "1d6 F" or "2d8+5 E", etc.
     const match = damageString.match(/(\d+)d(\d+)(?:\s*([\+\-])\s*(\d+))?(?:\s+(.*))?/i);
     let total = 0;
     
     if (match) {
-        const count = parseInt(match[1], 10);
+        let count = parseInt(match[1], 10);
         const sides = parseInt(match[2], 10);
         const sign = match[3];
-        const flatMod = match[4] ? parseInt(match[4], 10) : 0;
+        let flatMod = match[4] ? parseInt(match[4], 10) : 0;
         const parsedType = match[5] || '';
         
+        if (isCritical) {
+            count *= 2;
+            flatMod *= 2;
+        }
+
         const dieRolls = [];
         for(let i = 0; i < count; i++) {
             const r = Math.floor(Math.random() * sides) + 1;
@@ -51,8 +56,8 @@ export function DiceProvider({ children }) {
         setLog(prev => [{
             id: Date.now(),
             type: 'damage',
-            label,
-            notation: damageString,
+            label: isCritical ? `${label} (Crit)` : label,
+            notation: isCritical ? `${damageString} x2` : damageString,
             dieRolls,
             total,
             parsedType,
@@ -61,11 +66,14 @@ export function DiceProvider({ children }) {
 
     } else {
         // Fallback for flat numbers or unparseable dice
+        const flatVal = parseInt(damageString, 10);
+        const finalVal = !isNaN(flatVal) && isCritical ? flatVal * 2 : damageString;
+
         setLog(prev => [{
             id: Date.now(),
             type: 'damage',
-            label,
-            total: damageString,
+            label: isCritical ? `${label} (Crit)` : label,
+            total: finalVal,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
         }, ...prev]);
     }

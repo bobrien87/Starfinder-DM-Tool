@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDatabase } from '../context/DatabaseContext';
+import StatPill from '../components/StatPill';
 import { RARITY_COLORS } from '../utils/constants';
 import Button from '../components/Button';
 import CustomSelect from '../components/CustomSelect';
-import TraitFilterInput from '../components/TraitFilterInput';
+import CustomMultiSelect from '../components/CustomMultiSelect';
 
 export default function ItemListing() {
   const { items, createEntity, deleteEntity } = useDatabase();
@@ -146,8 +147,8 @@ export default function ItemListing() {
   }).sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
 
   return (
-    <main className="ml-0 mt-0 p-6 h-full overflow-y-auto bg-surface flex flex-col gap-6">
-      <div className="flex justify-between items-end border-b border-outline-variant/30 pb-4">
+    <main className="ml-0 mt-0 p-6 h-full overflow-y-auto bg-transparent flex flex-col gap-6">
+      <div className="flex justify-between items-end border-b border-outline-variant/30 pb-4 shrink-0">
         <div>
           <h1 className="text-3xl font-black font-headline text-primary tracking-tighter uppercase">Items</h1>
           <p className="text-secondary font-label text-xs tracking-widest uppercase opacity-70">Weapons, Armor, Gear, & Upgrades</p>
@@ -195,10 +196,11 @@ export default function ItemListing() {
           </div>
           <div className="flex flex-col gap-1 w-full sm:w-auto flex-1 min-w-[250px]">
               <label className="text-[10px] text-secondary font-bold uppercase tracking-widest">Filter by Traits</label>
-              <TraitFilterInput 
-                  selectedTraits={filterTraits} 
+              <CustomMultiSelect 
+                  value={filterTraits} 
                   onChange={setFilterTraits} 
-                  availableTraits={Array.from(new Set((items || []).flatMap(i => i.traits || []))).sort()} 
+                  options={Array.from(new Set((items || []).flatMap(c => c.traits || []))).sort()}
+                  placeholder="e.g. analog, unwieldy..."
               />
           </div>
           <div className="flex flex-col gap-1 w-full sm:w-auto">
@@ -244,7 +246,7 @@ export default function ItemListing() {
       </div>
 
       {/* ITEM LIST */}
-      <div className="flex flex-col gap-3 min-h-0 flex-1 overflow-y-auto pr-2 pb-2">
+      <div className="flex flex-col gap-3 min-h-0">
         {filteredItems.map((i) => {
           const isCommon = !i.rarity && !i.traits?.some(t => ['uncommon', 'rare', 'unique'].includes(t.toLowerCase()));
           const actualRarity = i.rarity ? i.rarity : (isCommon ? 'Common' : i.traits?.find(t => ['uncommon', 'rare', 'unique'].includes(t.toLowerCase())) || 'Common');
@@ -256,17 +258,19 @@ export default function ItemListing() {
           <Link to={`/items/${i.id}`} key={i.id} className="corner-cut bg-surface-container-high p-4 border-l-2 border-primary relative flex items-center justify-between gap-6 group hover:bg-surface-container-highest transition-colors cursor-pointer block shrink-0">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 to-transparent"></div>
             
-            <div className="flex-1 flex flex-wrap items-center gap-4">
+            <div className="flex-1 flex flex-col gap-1">
                 <h3 className="text-xl font-black font-headline text-primary tracking-tight uppercase leading-none group-hover:text-white transition-colors">{i.name}</h3>
-                <div className="flex flex-wrap gap-1.5">
-                    <span className={`px-2 py-[1px] border text-[9px] font-bold font-label uppercase ${rarityColor}`}>{actualRarity}</span>
-                    <span className="px-2 py-[1px] border border-secondary/30 text-[9px] font-bold font-label uppercase text-secondary">{i.type}</span>
-                    {filteredTargetTraits.slice(0, 5).map(trait => (
-                        <span key={trait} className="px-2 py-[1px] bg-primary/10 border border-primary/20 text-[9px] font-bold font-label text-primary uppercase">{trait}</span>
-                    ))}
-                    {filteredTargetTraits.length > 5 && (
-                        <span className="px-2 py-[1px] bg-primary/10 border border-primary/20 text-[9px] font-bold font-label text-primary uppercase">+{filteredTargetTraits.length - 5}</span>
-                    )}
+                <div className="flex flex-wrap gap-1.5 items-center">
+                    <StatPill variant="custom" size="xs" className={`${rarityColor} border`}>{actualRarity}</StatPill>
+                    <StatPill size="xs">{i.type}</StatPill>
+                    <div className="flex gap-1 flex-wrap mt-2 overflow-hidden max-h-[18px]">
+                        {filteredTargetTraits.slice(0, 5).map(trait => (
+                            <StatPill key={trait} size="xs">{trait}</StatPill>
+                        ))}
+                        {filteredTargetTraits.length > 5 && (
+                            <StatPill size="xs">+{filteredTargetTraits.length - 5}</StatPill>
+                        )}
+                    </div>
                 </div>
             </div>
 

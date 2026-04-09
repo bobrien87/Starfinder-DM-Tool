@@ -14,20 +14,22 @@ import './index.css';
 
 function App() {
   return (
-    <div className="min-h-screen bg-[#0d141d] text-[#dce3f0] font-body overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-[#162130] to-[#0d141d] text-[#dce3f0] font-body overflow-hidden flex flex-col">
       <TopAppBar />
-      <div className="flex-1 relative overflow-hidden">
-        <Routes>
-          <Route path="/" element={<ActiveEncounter />} />
-          <Route path="/players" element={<PlayerListing />} />
-          <Route path="/players/:id" element={<PlayerDetail />} />
-          <Route path="/creatures" element={<CreatureListing />} />
-          <Route path="/creatures/:id" element={<CreatureDetail />} />
-          <Route path="/items" element={<ItemListing />} />
-          <Route path="/items/:id" element={<ItemDetail />} />
-          <Route path="/encounters" element={<EncounterListing />} />
-          <Route path="/encounters/:id" element={<EncounterDetail />} />
-        </Routes>
+      <div className="flex-1 relative overflow-hidden flex justify-center">
+        <div className="w-full max-w-[1280px] h-full relative">
+          <Routes>
+            <Route path="/" element={<ActiveEncounter />} />
+            <Route path="/players" element={<PlayerListing />} />
+            <Route path="/players/:id" element={<PlayerDetail />} />
+            <Route path="/creatures" element={<CreatureListing />} />
+            <Route path="/creatures/:id" element={<CreatureDetail />} />
+            <Route path="/items" element={<ItemListing />} />
+            <Route path="/items/:id" element={<ItemDetail />} />
+            <Route path="/encounters" element={<EncounterListing />} />
+            <Route path="/encounters/:id" element={<EncounterDetail />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );

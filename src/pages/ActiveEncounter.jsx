@@ -18,7 +18,7 @@ export default function ActiveEncounter() {
 
   if (!activeEncounter) {
     return (
-      <main className="ml-0 mt-0 p-6 h-[calc(100vh-64px)] flex items-center justify-center bg-surface">
+      <main className="ml-0 mt-0 p-6 h-[calc(100vh-96px)] flex items-center justify-center bg-transparent">
         <div className="text-center flex flex-col items-center">
           <span className="material-symbols-outlined text-[64px] text-primary/30 mb-4" data-icon="swords">swords</span>
           <h1 className="text-2xl font-black font-headline text-primary mb-2 uppercase tracking-widest">No Active Encounter</h1>
@@ -139,7 +139,7 @@ export default function ActiveEncounter() {
   };
 
   return (
-    <main className="ml-0 mt-0 p-6 pb-12 h-[calc(100vh-64px)] overflow-y-auto bg-surface flex flex-col gap-6">
+    <main className="ml-0 mt-0 p-6 pb-12 h-[calc(100vh-96px)] overflow-y-auto bg-transparent flex flex-col gap-6">
       {/* Top Status Bar */}
       <div className="flex justify-between items-end border-b border-outline-variant/30 pb-4">
         <div>

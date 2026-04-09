@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useDatabase } from '../context/DatabaseContext';
 import ItemEdit from '../components/ItemEdit';
+import StatPill from '../components/StatPill';
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -28,7 +29,7 @@ export default function ItemDetail() {
 
   if (!item) {
       return (
-          <main className="ml-0 mt-0 p-6 h-full flex justify-center items-center bg-surface">
+          <main className="ml-0 mt-0 p-6 h-full flex justify-center items-center bg-transparent">
             <div className="text-primary font-label tracking-widest uppercase animate-pulse">Scanning Compendium...</div>
           </main>
       );
@@ -58,7 +59,7 @@ export default function ItemDetail() {
   }
 
   return (
-    <main className="ml-0 mt-0 p-6 h-full overflow-y-auto bg-surface flex flex-col gap-6">
+    <main className="ml-0 mt-0 p-6 h-full overflow-y-auto bg-transparent flex flex-col gap-6">
       
       {/* HEADER SECTION */}
       <div className="flex justify-between items-start border-b border-outline-variant/30 pb-4">
@@ -68,17 +69,24 @@ export default function ItemDetail() {
                 {item.name}
              </h1>
           </div>
-          <div className="flex flex-wrap gap-2 mt-2 items-center">
-             <span className="px-2 py-0.5 bg-secondary/10 border border-secondary/30 text-[10px] font-bold font-label text-secondary uppercase">
-                Level {item.level}
-             </span>
-             <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 text-[10px] font-bold font-label text-primary uppercase">
-                {item.type}
-             </span>
-             {(item.traits || []).filter(t => !['common', 'uncommon', 'rare', 'unique'].includes(t.toLowerCase())).map((t, idx) => (
-                 <span key={idx} className="px-2 py-0.5 bg-primary/10 border border-primary/20 text-[10px] font-bold font-label text-primary uppercase">
-                   {t}
-                 </span>
+          <div className="flex gap-2 mt-3 items-center flex-wrap">
+             <StatPill variant="secondary">
+                {isEditing ? (
+                   <>Level <input type="number" value={item.level} onChange={e => {
+                      const val = parseInt(e.target.value);
+                      updateEntity('items', item.id, { level: isNaN(val) ? 0 : val });
+                   }} className="bg-transparent border-b border-primary outline-none focus:border-white text-secondary w-8 ml-1" /></>
+                ) : `Level ${item.level}`}
+             </StatPill>
+             
+             <StatPill>
+                {isEditing ? (
+                   <input type="text" value={item.type || ''} onChange={e => updateEntity('items', item.id, { type: e.target.value })} className="bg-transparent border-b border-primary outline-none focus:border-white w-20 text-primary" placeholder="Type..." />
+                ) : (item.type || 'Unknown')}
+             </StatPill>
+
+             {item.traits?.map((t, idx) => (
+                 <StatPill key={idx}>{t}</StatPill>
              ))}
           </div>
         </div>

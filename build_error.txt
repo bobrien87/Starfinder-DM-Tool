@@ -1,0 +1,30 @@
+
+> temp-app@0.0.0 build
+> vite build
+
+vite v8.0.5 building client environment for production...
+[2Ktransforming...✓ 72 modules transformed.
+✗ Build failed in 456ms
+error during build:
+Build failed with 1 error:
+
+[31m[PARSE_ERROR] Error:[0m Identifier `InlinePlayerInventory` has already been declared
+    [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/PlayerDetail.jsx:9:8 [38;5;246m][0m
+    [38;5;246m│[0m
+ [38;5;246m 9 │[0m [38;5;249mi[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mt[0m[38;5;249m [0mInlinePlayerInventory[38;5;249m [0m[38;5;249mf[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249m [0m[38;5;249m"[0m[38;5;249m.[0m[38;5;249m.[0m[38;5;249m/[0m[38;5;249mc[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249me[0m[38;5;249mn[0m[38;5;249mt[0m[38;5;249ms[0m[38;5;249m/[0m[38;5;249mI[0m[38;5;249mn[0m[38;5;249ml[0m[38;5;249mi[0m[38;5;249mn[0m[38;5;249me[0m[38;5;249mP[0m[38;5;249ml[0m[38;5;249ma[0m[38;5;249my[0m[38;5;249me[0m[38;5;249mr[0m[38;5;249mI[0m[38;5;249mn[0m[38;5;249mv[0m[38;5;249me[0m[38;5;249mn[0m[38;5;249mt[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249my[0m[38;5;249m"[0m[38;5;249m;[0m
+ [38;5;240m   │[0m        ──────────┬──────────  
+ [38;5;240m   │[0m                  ╰──────────── `InlinePlayerInventory` has already been declared here
+ [38;5;246m10 │[0m [38;5;249mi[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mt[0m[38;5;249m [0mInlinePlayerInventory[38;5;249m [0m[38;5;249mf[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249m [0m[38;5;249m"[0m[38;5;249m.[0m[38;5;249m.[0m[38;5;249m/[0m[38;5;249mc[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249me[0m[38;5;249mn[0m[38;5;249mt[0m[38;5;249ms[0m[38;5;249m/[0m[38;5;249mI[0m[38;5;249mn[0m[38;5;249ml[0m[38;5;249mi[0m[38;5;249mn[0m[38;5;249me[0m[38;5;249mP[0m[38;5;249ml[0m[38;5;249ma[0m[38;5;249my[0m[38;5;249me[0m[38;5;249mr[0m[38;5;249mI[0m[38;5;249mn[0m[38;5;249mv[0m[38;5;249me[0m[38;5;249mn[0m[38;5;249mt[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249my[0m[38;5;249m"[0m[38;5;249m;[0m
+ [38;5;240m   │[0m        ──────────┬──────────  
+ [38;5;240m   │[0m                  ╰──────────── It can not be redeclared here
+[38;5;246m────╯[0m
+
+    at aggregateBindingErrorsIntoJsError (file:///Users/personal/Documents/Starfinder%20DM%20Tool/node_modules/rolldown/dist/shared/error-BLhcSyeg.mjs:48:18)
+    at unwrapBindingResult (file:///Users/personal/Documents/Starfinder%20DM%20Tool/node_modules/rolldown/dist/shared/error-BLhcSyeg.mjs:18:128)
+    at #build (file:///Users/personal/Documents/Starfinder%20DM%20Tool/node_modules/rolldown/dist/shared/rolldown-build-CPrIX9V6.mjs:3313:34)
+    at async buildEnvironment (file:///Users/personal/Documents/Starfinder%20DM%20Tool/node_modules/vite/dist/node/chunks/node.js:32939:64)
+    at async Object.build (file:///Users/personal/Documents/Starfinder%20DM%20Tool/node_modules/vite/dist/node/chunks/node.js:33361:19)
+    at async Object.buildApp (file:///Users/personal/Documents/Starfinder%20DM%20Tool/node_modules/vite/dist/node/chunks/node.js:33358:153)
+    at async CAC.<anonymous> (file:///Users/personal/Documents/Starfinder%20DM%20Tool/node_modules/vite/dist/node/cli.js:778:3) {
+  errors: [Getter/Setter]
+}

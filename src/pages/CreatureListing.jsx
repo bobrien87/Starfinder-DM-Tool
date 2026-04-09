@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDatabase } from '../context/DatabaseContext';
 import { RARITY_COLORS } from '../utils/constants';
+import StatPill from '../components/StatPill';
 import Button from '../components/Button';
-import TraitFilterInput from '../components/TraitFilterInput';
+import CustomMultiSelect from '../components/CustomMultiSelect';
 import CustomSelect from '../components/CustomSelect';
 
 export default function CreatureListing() {
@@ -131,7 +132,7 @@ export default function CreatureListing() {
   }).sort((a,b) => (a.level || 0) - (b.level || 0));
 
   return (
-    <main className="ml-0 mt-0 p-6 h-full overflow-y-auto bg-surface flex flex-col gap-6">
+    <main className="ml-0 mt-0 p-6 h-full overflow-y-auto bg-transparent flex flex-col gap-6">
       <div className="flex justify-between items-end border-b border-outline-variant/30 pb-4 shrink-0">
         <div>
           <h1 className="text-3xl font-black font-headline text-primary tracking-tighter uppercase">Creatures</h1>
@@ -163,10 +164,11 @@ export default function CreatureListing() {
           </div>
           <div className="flex flex-col gap-1 w-full sm:w-auto flex-1 min-w-[250px]">
               <label className="text-[10px] text-secondary font-bold uppercase tracking-widest">Filter by Traits</label>
-              <TraitFilterInput 
-                  selectedTraits={filterTraits} 
+              <CustomMultiSelect 
+                  value={filterTraits} 
                   onChange={setFilterTraits} 
-                  availableTraits={Array.from(new Set((creatures || []).flatMap(c => c.traits || []))).sort()} 
+                  options={Array.from(new Set((creatures || []).flatMap(c => c.traits || []))).sort()}
+                  placeholder="e.g. humanoid, swarm..."
               />
           </div>
           <div className="flex flex-col gap-1 w-full sm:w-auto">
@@ -202,13 +204,13 @@ export default function CreatureListing() {
           return (
           <Link to={`/creatures/${c.id}`} key={c.id} className="corner-cut bg-surface-container-high p-4 border-l-2 border-primary relative flex items-center justify-between gap-6 group hover:bg-surface-container-highest transition-colors cursor-pointer block shrink-0">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 to-transparent"></div>
-            
+
+
             <div className="flex-1 flex flex-wrap items-center gap-4">
               <h3 className="text-xl font-black font-headline text-primary tracking-tight uppercase leading-none group-hover:text-white transition-colors">{c.name}</h3>
-              <div className="flex flex-wrap gap-1.5">
-                <span className={`px-2 py-[1px] border text-[9px] font-bold font-label uppercase ${rarityColor}`}>{actualRarity}</span>
-                {c.traits?.filter(t => !['common', 'uncommon', 'rare', 'unique'].includes(t.toLowerCase())).map((t, i) => <span key={i} className="px-2 py-[1px] bg-primary/10 border border-primary/20 text-[9px] font-bold font-label text-primary uppercase">{t}</span>)}
-              </div>
+              <StatPill variant="custom" size="xs" className={`${rarityColor} border`}>{actualRarity}</StatPill>
+              <StatPill size="xs">{c.type || 'Unknown'}</StatPill>
+              {c.traits?.filter(t => !['common', 'uncommon', 'rare', 'unique'].includes(t.toLowerCase())).map((t, i) => <StatPill key={i} size="xs">{t}</StatPill>)}
             </div>
 
             <div className="text-center pr-6 border-r border-outline-variant/20 hidden sm:flex flex-col items-center justify-center">

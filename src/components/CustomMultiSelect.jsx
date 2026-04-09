@@ -1,38 +1,55 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function TraitFilterInput({ selectedTraits, onChange, availableTraits }) {
+export default function CustomMultiSelect({ 
+    value = [], 
+    onChange, 
+    options = [],
+    placeholder = "Select..."
+}) {
     const [inputValue, setInputValue] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef(null);
     const wrapperRef = useRef(null);
 
     // Compute dropdown matches
-    const filteredAvailable = availableTraits.filter(t => 
+    const filteredAvailable = options.filter(t => 
         t.toLowerCase().includes(inputValue.toLowerCase()) && 
-        !selectedTraits.includes(t)
+        !value.includes(t)
     );
 
     const handleSelect = (trait) => {
-        onChange([...selectedTraits, trait]);
+        onChange([...value, trait]);
         setInputValue('');
         inputRef.current?.focus();
     };
 
     const handleRemove = (trait) => {
-        onChange(selectedTraits.filter(t => t !== trait));
+        onChange(value.filter(t => t !== trait));
     };
 
     const handleKeyDown = (e) => {
-        if (e.key === 'Backspace' && inputValue === '' && selectedTraits.length > 0) {
+        if (e.key === 'Backspace' && inputValue === '' && value.length > 0) {
             // Remove the last selected trait
-            const newTraits = [...selectedTraits];
+            const newTraits = [...value];
             newTraits.pop();
             onChange(newTraits);
-        } else if (e.key === 'Enter' && filteredAvailable.length > 0) {
-            // Select the exact match or first match
-            const exactMatch = filteredAvailable.find(t => t.toLowerCase() === inputValue.toLowerCase());
-            if (exactMatch) handleSelect(exactMatch);
-            else handleSelect(filteredAvailable[0]);
+        } else if (e.key === 'Enter') {
+            e.preventDefault(); // Prevent form submission
+            const val = inputValue.trim();
+            if (val === '') return;
+
+            // Try exact match first
+            const exactMatch = filteredAvailable.find(t => t.toLowerCase() === val.toLowerCase());
+            if (exactMatch) {
+                handleSelect(exactMatch);
+            } else {
+                // If it's a custom string not in the options array
+                if (!value.includes(val)) {
+                    handleSelect(val);
+                } else {
+                    setInputValue(''); // Clear if duplicate
+                }
+            }
         }
     };
 
@@ -41,11 +58,19 @@ export default function TraitFilterInput({ selectedTraits, onChange, availableTr
         const handleClickOutside = (event) => {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
                 setIsFocused(false);
+                if (inputRef.current) {
+                   const pendingVal = inputRef.current.value.trim();
+                   if (pendingVal && !value.includes(pendingVal)) {
+                       // Optionally, auto-save pending text on blur? 
+                       // Disabling for now: better to strictly require Enter for intent.
+                   }
+                }
+                setInputValue('');
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    }, [value]);
 
     return (
         <div ref={wrapperRef} className="relative w-full">
@@ -57,14 +82,14 @@ export default function TraitFilterInput({ selectedTraits, onChange, availableTr
                 }}
             >
                 {/* Selected Chips */}
-                {selectedTraits.map(trait => (
-                    <div key={trait} className="inline-flex items-center gap-1 bg-surface-container-high border border-outline-variant/50 px-2 py-0.5 text-[10px] font-bold font-label uppercase tracking-widest text-primary group shadow-sm select-none">
-                        {trait}
+                {value.map(val => (
+                    <div key={val} className="inline-flex items-center gap-1 bg-surface-container-high border border-outline-variant/50 px-2 py-0.5 text-[10px] font-bold font-label uppercase tracking-widest text-primary group shadow-sm select-none">
+                        {val}
                         <button 
                             type="button" 
                             onClick={(e) => {
                                 e.stopPropagation();
-                                handleRemove(trait);
+                                handleRemove(val);
                             }} 
                             className="text-secondary/50 hover:text-error transition-colors flex items-center justify-center -mr-1"
                         >
@@ -84,7 +109,7 @@ export default function TraitFilterInput({ selectedTraits, onChange, availableTr
                     }}
                     onKeyDown={handleKeyDown}
                     onFocus={() => setIsFocused(true)}
-                    placeholder={selectedTraits.length === 0 ? "e.g. humanoid, swarm..." : ""}
+                    placeholder={value.length === 0 ? placeholder : ""}
                     className="flex-1 min-w-[80px] bg-transparent border-none outline-none text-xs text-primary h-6"
                 />
             </div>
@@ -93,17 +118,17 @@ export default function TraitFilterInput({ selectedTraits, onChange, availableTr
             {isFocused && (filteredAvailable.length > 0 || inputValue.length > 0) && (
                 <div className="absolute top-full mt-1 left-0 w-full max-h-48 overflow-y-auto bg-surface-container border border-primary/30 shadow-lg z-50">
                     {filteredAvailable.length > 0 ? (
-                        filteredAvailable.map(trait => (
+                        filteredAvailable.map(opt => (
                             <div 
-                                key={trait}
-                                onClick={() => handleSelect(trait)}
+                                key={opt}
+                                onClick={() => handleSelect(opt)}
                                 className="px-3 py-2 text-xs text-secondary hover:bg-primary/20 hover:text-primary cursor-pointer border-b border-outline-variant/10 uppercase tracking-widest font-label font-bold"
                             >
-                                {trait}
+                                {opt}
                             </div>
                         ))
                     ) : (
-                        <div className="px-3 py-2 text-xs text-outline-variant italic">No exact traits found. (Press Enter to add anyway)</div>
+                        <div className="px-3 py-2 text-xs text-outline-variant italic">No exact match in options. (Press Enter to add custom value)</div>
                     )}
                 </div>
             )}
