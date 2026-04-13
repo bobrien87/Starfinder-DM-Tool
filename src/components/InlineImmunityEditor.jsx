@@ -4,38 +4,38 @@ import { useDatabase } from '../context/DatabaseContext';
 import StatPill from './StatPill';
 
 export default function InlineImmunityEditor({ 
-    values = [], 
-    collectionName, 
-    entityId, 
-    fieldPath, 
-    isEditing, 
-    options = []
+  values = [], 
+  collectionName, 
+  entityId, 
+  fieldPath, 
+  isEditing, 
+  options = []
 }) {
-    const { updateEntity } = useDatabase();
+  const { updateEntity } = useDatabase();
 
-    const handleChange = (newValues) => {
-        updateEntity(collectionName, entityId, { [fieldPath]: newValues });
-    };
+  const handleChange = (newValues) => {
+    updateEntity(collectionName, entityId, { [fieldPath]: newValues });
+  };
 
-    if (!isEditing) {
-        if (!values || values.length === 0) {
-            return <span className="text-xs text-outline-variant italic group-hover:text-primary transition-colors">None</span>;
-        }
-        return (
-            <div className="flex gap-1 flex-wrap">
-                {values.map((v, i) => (
-                    <StatPill key={i} variant="positive">{v}</StatPill>
-                ))}
-            </div>
-        );
+  if (!isEditing) {
+    if (!values || values.length === 0) {
+      return <span className="text-xs text-outline-variant italic group-hover:text-primary transition-colors">None</span>;
     }
-
     return (
-        <CustomMultiSelect 
-            value={values || []} 
-            onChange={handleChange} 
-            options={options} 
-            placeholder="Add immunity..."
-        />
+      <div className="flex gap-1 flex-wrap">
+        {values.map((v, i) => (
+          <StatPill key={i}>{v}</StatPill>
+        ))}
+      </div>
     );
+  }
+
+  return (
+    <CustomMultiSelect 
+      value={values || []} 
+      onChange={handleChange} 
+      options={options} 
+      placeholder="Add immunity..."
+    />
+  );
 }

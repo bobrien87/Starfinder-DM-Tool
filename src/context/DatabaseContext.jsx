@@ -15,6 +15,15 @@ export function DatabaseProvider({ children }) {
   const [encounters, setEncounters] = useState([]);
   const [spells, setSpells] = useState([]);
   const [items, setItems] = useState([]);
+  
+  const [feats, setFeats] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [ancestries, setAncestries] = useState([]);
+  const [backgrounds, setBackgrounds] = useState([]);
+  const [heritages, setHeritages] = useState([]);
+  const [actions, setActions] = useState([]);
+  const [effects, setEffects] = useState([]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,6 +48,28 @@ export function DatabaseProvider({ children }) {
       setItems(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
 
+    const unsubFeats = onSnapshot(collection(db, 'feats'), (snapshot) => {
+      setFeats(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    const unsubClasses = onSnapshot(collection(db, 'classes'), (snapshot) => {
+      setClasses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    const unsubAncestries = onSnapshot(collection(db, 'ancestries'), (snapshot) => {
+      setAncestries(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    const unsubBackgrounds = onSnapshot(collection(db, 'backgrounds'), (snapshot) => {
+      setBackgrounds(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    const unsubHeritages = onSnapshot(collection(db, 'heritages'), (snapshot) => {
+      setHeritages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    const unsubActions = onSnapshot(collection(db, 'actions'), (snapshot) => {
+      setActions(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    const unsubEffects = onSnapshot(collection(db, 'effects'), (snapshot) => {
+      setEffects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
     // Assume loaded after a short delay for listeners to fire initial snapshots
     // In a prod app, you might track individual loading states per collection
     const timeout = setTimeout(() => {
@@ -51,6 +82,13 @@ export function DatabaseProvider({ children }) {
       unsubEncounters();
       unsubSpells();
       unsubItems();
+      unsubFeats();
+      unsubClasses();
+      unsubAncestries();
+      unsubBackgrounds();
+      unsubHeritages();
+      unsubActions();
+      unsubEffects();
       clearTimeout(timeout);
     };
   }, []);
@@ -63,6 +101,13 @@ export function DatabaseProvider({ children }) {
         case 'encounters': return encounters.find(e => e.id === id);
         case 'spells': return spells.find(s => s.id === id);
         case 'items': return items.find(i => i.id === id);
+        case 'feats': return feats.find(f => f.id === id);
+        case 'classes': return classes.find(c => c.id === id);
+        case 'ancestries': return ancestries.find(a => a.id === id);
+        case 'backgrounds': return backgrounds.find(b => b.id === id);
+        case 'heritages': return heritages.find(h => h.id === id);
+        case 'actions': return actions.find(a => a.id === id);
+        case 'effects': return effects.find(e => e.id === id);
         default: return null;
     }
   };
@@ -88,6 +133,13 @@ export function DatabaseProvider({ children }) {
     encounters,
     spells,
     items,
+    feats,
+    classes,
+    ancestries,
+    backgrounds,
+    heritages,
+    actions,
+    effects,
     loading,
     getEntity,
     updateEntity,

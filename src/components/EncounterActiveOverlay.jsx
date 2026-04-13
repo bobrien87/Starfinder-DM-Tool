@@ -5,274 +5,502 @@ import { useDatabase } from '../context/DatabaseContext';
 import { CONDITIONS } from '../data/conditions';
 import { getModifiedStat } from '../utils/modifiers';
 import ConditionsModal from './ConditionsModal';
+import EffectsModal from './EffectsModal';
 import ActionIcon from './ActionIcon';
 import Tooltip from './Tooltip';
-import { DEFAULT_AVATAR } from '../utils/constants';
 import StatPill from './StatPill';
 import StrikeActionGroup from './StrikeActionGroup';
 import SingleD20Icon from './SingleD20Icon';
+import EntityLevelBadge from './EntityLevelBadge';
+
+// New Imports for Full Statblock
+import StatCard from './StatCard';
+import StatList from './StatList';
+import InlineStringArray from './InlineStringArray';
+import InlineImmunityEditor from './InlineImmunityEditor';
+import InlineResistanceEditor from './InlineResistanceEditor';
+import InlineSenseEditor from './InlineSenseEditor';
+import InlineSkillEditor from './InlineSkillEditor';
+import InlineTraitSelectEditor from './InlineTraitSelectEditor';
+import InlineCreatureAttacks from './InlineCreatureAttacks';
+import InlineCreatureAbilities from './InlineCreatureAbilities';
+import InlineSpellcastingEditor from './InlineSpellcastingEditor';
+import InlinePlayerWeapons from './InlinePlayerWeapons';
+import InlinePlayerInventory from './InlinePlayerInventory';
+import InlineReferenceArray from './InlineReferenceArray';
+import { IMMUNITY_OPTIONS, RESISTANCE_WEAKNESS_OPTIONS } from '../data/defenses';
+import { SENSES, LANGUAGES } from '../data/traits';
+import { GAME_SKILLS } from '../utils/constants';
 
 function EntityCard({ label, turnId, encounter, isTarget = false }) {
-    const { getEntity, updateEntity } = useDatabase();
-    const { rollDice, rollDamage } = useDice();
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  const { getEntity, updateEntity, spells } = useDatabase();
+  const { rollDice, rollDamage } = useDice();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEffectsModalOpen, setIsEffectsModalOpen] = useState(false);
 
-    if (!turnId) return (
-        <div className="flex flex-col gap-4 overflow-hidden h-full">
-            <h2 className="text-xs font-bold font-label text-secondary opacity-50 uppercase tracking-widest flex items-center gap-2 shrink-0">{label}</h2>
-            <div className="bg-surface-container-low border border-outline-variant/10 p-8 h-full flex items-center justify-center text-secondary uppercase font-bold tracking-widest corner-cut opacity-50 text-center">
-                Select a combatant
-            </div>
-        </div>
-    );
+  if (!turnId) return (
+    <div className="flex flex-col gap-4 overflow-hidden h-full">
+         <div className="border border-outline-variant/10 p-8 h-full flex items-center justify-center corner-cut opacity-50 text-center">
+        <h2>Select a combatant</h2>
+      </div>
+    </div>
+  );
 
-    const activeCombatant = encounter.combatants?.find(c => c.instanceId === turnId);
-    if (!activeCombatant) return <div className="flex flex-col gap-4 overflow-hidden h-full"><div className="bg-surface-container-low p-8 text-secondary italic">Active combatant invalid.</div></div>;
+  const activeCombatant = encounter.combatants?.find(c => c.instanceId === turnId);
+  if (!activeCombatant) return <div className="flex flex-col gap-4 overflow-hidden h-full"><div className="p-8 text-primary italic">Active combatant invalid.</div></div>;
 
-    const baseEntity = getEntity(activeCombatant.type === 'PC' ? 'players' : 'creatures', activeCombatant.refId);
-    if (!baseEntity) return <div className="flex flex-col gap-4 overflow-hidden h-full"><div className="bg-surface-container-low p-8 text-error">Failed to load base data.</div></div>;
+  const baseEntity = getEntity(activeCombatant.type === 'PC' ? 'players' : 'creatures', activeCombatant.refId);
+  if (!baseEntity) return <div className="flex flex-col gap-4 overflow-hidden h-full"><div className="p-8 text-accent-yellow">Failed to load base data.</div></div>;
 
-    const isPC = activeCombatant.type === 'PC';
+  const isPC = activeCombatant.type === 'PC';
+  
+  // Manage Conditions
+  const activeConditions = isPC ? (baseEntity.conditions || []) : (activeCombatant.conditions || []);
+  
+  const handleConditionsUpdate = async (newConditions) => {
+    if (isPC) {
+      await updateEntity('players', baseEntity.id, { conditions: newConditions });
+    } else {
+      const newCombatants = encounter.combatants.map(c => 
+        c.instanceId === turnId ? { ...c, conditions: newConditions } : c
+      );
+      await updateEntity('encounters', encounter.id, { combatants: newCombatants });
+    }
+  };
+
+  const handleAddCondition = (name) => {
+    if (!name) return;
+    const exists = activeConditions.find(c => c.name === name);
+    if (exists && CONDITIONS[name].hasValue) {
+      handleConditionsUpdate(activeConditions.map(c => c.name === name ? { ...c, value: c.value + 1 } : c));
+    } else if (!exists) {
+      handleConditionsUpdate([...activeConditions, { name, value: CONDITIONS[name].hasValue ? 1 : null }]);
+    }
+  };
+
+  const handleUpdateConditionValue = (name, delta) => {
+    const cond = activeConditions.find(c => c.name === name);
+    if (!cond) return;
     
-    // Manage Conditions
-    const activeConditions = isPC ? (baseEntity.conditions || []) : (activeCombatant.conditions || []);
+    let newArray = [];
+    if (cond.value + delta <= 0) {
+      newArray = activeConditions.filter(c => c.name !== name);
+    } else {
+      newArray = activeConditions.map(c => c.name === name ? { ...c, value: c.value + delta } : c);
+    }
+    handleConditionsUpdate(newArray);
+  };
+
+  const handleRemoveCondition = (name) => {
+    handleConditionsUpdate(activeConditions.filter(c => c.name !== name));
+  };
+
+  // Manage Effects
+  const activeEffects = isPC ? (baseEntity.effects || []) : (activeCombatant.effects || []);
+  
+  const handleEffectsUpdate = async (newEffects) => {
+    if (isPC) {
+      await updateEntity('players', baseEntity.id, { effects: newEffects });
+    } else {
+      const newCombatants = encounter.combatants.map(c => 
+        c.instanceId === turnId ? { ...c, effects: newEffects } : c
+      );
+      await updateEntity('encounters', encounter.id, { combatants: newCombatants });
+    }
+  };
+
+  const handleAddEffect = (name) => {
+    if (!name) return;
+    const exists = activeEffects.find(e => e.name === name);
+    if (!exists) {
+      handleEffectsUpdate([...activeEffects, { name, value: 1 }]);
+    }
+  };
+
+  const handleUpdateEffectValue = (name, delta) => {
+    const eff = activeEffects.find(e => e.name === name);
+    if (!eff) return;
+    const startValue = eff.value === null ? 1 : eff.value;
+    const newValue = startValue + delta;
     
-    const handleConditionsUpdate = async (newConditions) => {
-        if (isPC) {
-            await updateEntity('players', baseEntity.id, { conditions: newConditions });
-        } else {
-            const newCombatants = encounter.combatants.map(c => 
-                c.instanceId === turnId ? { ...c, conditions: newConditions } : c
-            );
-            await updateEntity('encounters', encounter.id, { combatants: newCombatants });
-        }
-    };
+    if (newValue <= 0) {
+      handleRemoveEffect(name);
+    } else {
+      handleEffectsUpdate(activeEffects.map(e => e.name === name ? { ...e, value: newValue } : e));
+    }
+  };
 
-    const handleAddCondition = (name) => {
-        if (!name) return;
-        const exists = activeConditions.find(c => c.name === name);
-        if (exists && CONDITIONS[name].hasValue) {
-            handleConditionsUpdate(activeConditions.map(c => c.name === name ? { ...c, value: c.value + 1 } : c));
-        } else if (!exists) {
-            handleConditionsUpdate([...activeConditions, { name, value: CONDITIONS[name].hasValue ? 1 : null }]);
-        }
-    };
+  const handleRemoveEffect = (name) => {
+    handleEffectsUpdate(activeEffects.filter(e => e.name !== name));
+  };
 
-    const handleUpdateConditionValue = (name, delta) => {
-        const cond = activeConditions.find(c => c.name === name);
-        if (!cond) return;
+  // Build dynamic effects dictionary
+  
+  const allCombatantData = (encounter.combatants || []).map(c => getEntity(c.type === 'PC' ? 'players' : 'creatures', c.refId)).filter(Boolean);
+  const availableEffectsMap = new Map();
+
+  allCombatantData.forEach(d => {
+    // Collect all elements that strictly represent Activatable actions or explicit spells
+    const activatableElements = [
+      ...(d.actions || []),
+      ...(d.spellcasting || []).flatMap(entry => 
+        Object.values(entry.spellsByLevel || {}).flatMap(levelData => levelData.spells || [])
+      ).map(s => {
+          if (typeof s === 'string') {
+             return spells.find(sp => sp.id === s || (sp.name && sp.name.toLowerCase() === s.toLowerCase()));
+          }
+          return s;
+      }),
+      // We explicitly skip `feats` and `passives` to prevent persistent intrinsic effects from cluttering the dynamic badge list!
+    ].filter(Boolean);
+
+    activatableElements.forEach(item => {
+        // Safe access to the deeply mapped structural relationship graph
+        const linkedEffects = item.relationships?.effects || [];
         
-        let newArray = [];
-        if (cond.value + delta <= 0) {
-            newArray = activeConditions.filter(c => c.name !== name);
-        } else {
-            newArray = activeConditions.map(c => c.name === name ? { ...c, value: c.value + delta } : c);
-        }
-        handleConditionsUpdate(newArray);
-    };
+        linkedEffects.forEach(effectObj => {
+            const { uuid, label } = effectObj;
+            if (label) {
+               availableEffectsMap.set(label.toLowerCase(), { name: label, desc: `Effect link securely generated via underlying Entity Relationship graph.` });
+            }
+        });
+    });
+  });
 
-    const handleRemoveCondition = (name) => {
-        handleConditionsUpdate(activeConditions.filter(c => c.name !== name));
-    };
+  const availableEffects = Array.from(availableEffectsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 
-    // Calculate max hp dynamically (factoring Drained)
-    const baseMaxHP = baseEntity.hp?.max || 10;
-    const computedMaxHPResult = getModifiedStat(baseMaxHP, baseEntity, activeConditions, ['max_hp']);
-    const maxHP = computedMaxHPResult.final;
-    const isPenalized = computedMaxHPResult.delta < 0;
+  // Calculate max hp dynamically (factoring Drained)
+  const baseMaxHP = baseEntity.hp?.max || 10;
+  const computedMaxHPResult = getModifiedStat(baseMaxHP, baseEntity, activeConditions, ['max_hp']);
+  const maxHP = computedMaxHPResult.final;
+  const isPenalized = computedMaxHPResult.delta < 0;
 
-    const hpData = isPC ? baseEntity.hp : activeCombatant.hp;
-    const currentHP = hpData?.current ?? maxHP;
-    const isLowHp = maxHP > 0 && (currentHP / maxHP) <= 0.5;
-    const hpPercent = maxHP > 0 ? Math.max(0, Math.min(100, (currentHP / maxHP) * 100)) : 0;
+  const hpData = isPC ? baseEntity.hp : activeCombatant.hp;
+  const currentHP = hpData?.current ?? maxHP;
+  const isLowHp = maxHP > 0 && (currentHP / maxHP) <= 0.5;
+  const hpPercent = maxHP > 0 ? Math.max(0, Math.min(100, (currentHP / maxHP) * 100)) : 0;
+  
+  // Core Defenses
+  const acRes = getModifiedStat(baseEntity.ac || 10, baseEntity, activeConditions, ['ac', 'all_dcs']);
+  const fortRes = getModifiedStat(baseEntity.saves?.fortitude || 0, baseEntity, activeConditions, ['fortitude', 'all_dcs']);
+  const refRes = getModifiedStat(baseEntity.saves?.reflex || 0, baseEntity, activeConditions, ['reflex', 'dex_checks', 'all_dcs']);
+  const willRes = getModifiedStat(baseEntity.saves?.will || 0, baseEntity, activeConditions, ['will', 'all_dcs']);
+  const perceptionRes = getModifiedStat(baseEntity.perception || 0, baseEntity, activeConditions, ['perception', 'wis_checks', 'all_checks']);
+
+  const hpColor = isPenalized ? 'text-accent-yellow' : (isTarget ? 'text-primary' : 'text-primary');
+
+  const handleHPSave = async (newVal) => {
+    if (isPC) {
+      await updateEntity('players', baseEntity.id, { 'hp.current': newVal });
+    } else {
+      const newCombatants = encounter.combatants.map(c => 
+        c.instanceId === turnId ? { ...c, hp: { ...c.hp, current: newVal } } : c
+      );
+      await updateEntity('encounters', encounter.id, { combatants: newCombatants });
+    }
+  };
+
+  const formatMod = (num) => {
+    const n = Number(num);
+    return isNaN(n) ? num : n >= 0 ? `+${n}` : n;
+  };
+
+  // Precalculate modified skills mapped objects for InlineSkillEditor
+  const modifiedSkills = {};
+  if (baseEntity.skills) {
+    Object.entries(baseEntity.skills).forEach(([skill, val]) => {
+      let relatedAttrs = ['all_checks'];
+      const lower = skill.toLowerCase();
+      if (['acrobatics','stealth','thievery'].includes(lower)) relatedAttrs.push('dex_checks');
+      if (['athletics'].includes(lower)) relatedAttrs.push('str_checks');
+      if (['arcana','crafting','lore','medicine','occultism','religion','society'].includes(lower)) relatedAttrs.push('int_checks');
+      if (['nature','survival'].includes(lower)) relatedAttrs.push('wis_checks');
+      if (['deception','diplomacy','intimidation','performance'].includes(lower)) relatedAttrs.push('cha_checks');
+      const res = getModifiedStat(val, baseEntity, activeConditions, relatedAttrs);
+      modifiedSkills[skill] = { final: res.final, delta: res.delta, causes: res.causes };
+    });
+  }
+
+  // Precalculate modified attacks array to inject UI styling into InlineCreatureAttacks collapsible headers
+  const modifiedAttacks = (baseEntity.attacks || []).map(atk => {
+    const bonus = atk.bonus || atk.attackBonus || 0;
+    const traits = atk.traits || atk.weaponData?.traits || [];
     
-    const hpColor = isPenalized ? 'text-error' : (isTarget ? 'text-secondary' : 'text-primary');
-
-    const handleHPSave = async (newVal) => {
-        if (isPC) {
-            await updateEntity('players', baseEntity.id, { 'hp.current': newVal });
-        } else {
-            const newCombatants = encounter.combatants.map(c => 
-                c.instanceId === turnId ? { ...c, hp: { ...c.hp, current: newVal } } : c
-            );
-            await updateEntity('encounters', encounter.id, { combatants: newCombatants });
-        }
+    const isRanged = atk.type?.toLowerCase() === 'ranged' || traits.some(t => t.toLowerCase() === 'thrown' || t.toLowerCase() === 'ranged');
+    const isFinesse = traits.some(t => t.toLowerCase() === 'finesse' || t.toLowerCase() === 'operative');
+    
+    const atkRes = getModifiedStat(bonus, baseEntity, activeConditions, [
+      'attack_rolls', 
+      'all_checks', 
+      traits.some(t => t.toLowerCase() === 'agile') ? 'agile_attacks' : null, 
+      (isRanged || isFinesse) ? 'dex_checks' : 'str_checks'
+    ].filter(Boolean));
+    
+    return {
+      ...atk,
+      bonus: atkRes.final,
+      theme: atkRes.delta < 0 ? 'accent-yellow' : undefined,
+      causes: atkRes.causes,
+      delta: atkRes.delta
     };
+  });
 
-    const formatMod = (num) => num >= 0 ? `+${num}` : num;
+  return (
+    <div className="flex flex-col gap-4 h-full min-h-0">
+            
+      <div className="w-full flex flex-col relative">
+        <div className={`corner-cut px-6 pb-6 pt-0 -2 relative flex flex-col w-full ${isTarget ? '-secondary' : '-primary'}`}>
+         
+       
+       {/* === ROW 1: HEADER & HP === */}
+       <div className="flex justify-between items-start mb-6 gap-6">
+        <div className="min-w-0 pr-4 flex-1">
+         <h2 className={`truncate m-0 leading-none ${isTarget ? 'text-secondary !drop-shadow-none' : ''}`}>
+           {activeCombatant.name}
+         </h2>
+         <div className="flex gap-2 mt-2 items-center flex-wrap">
+           {baseEntity.traits?.map((t, i) => {
+             const isSize = ['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan'].includes(t.toLowerCase());
+             return <StatPill key={i} size="xs" variant={isTarget || isSize ? "secondary" : "primary"}>{t}</StatPill>;
+           })}
+         </div>
+        </div>
+        {isPC && (
+         <p className={`text-[12px] font-label tracking-widest mt-2 ${isTarget ? 'text-off-white/60' : 'text-off-white'}`}>
+              Player Character • {baseEntity.size} {baseEntity.ancestry}
+              <span className="ml-4 text-primary ">Hero Points: {baseEntity.heroPoints}</span>
+         </p>
+        )}
+        <EntityLevelBadge level={baseEntity.level} isPC={isPC} />
+       </div>
 
-    const acRes = getModifiedStat(baseEntity.ac || 10, baseEntity, activeConditions, ['ac', 'all_dcs']);
-    const fortRes = getModifiedStat(baseEntity.saves?.fortitude || 0, baseEntity, activeConditions, ['fortitude', 'all_dcs']);
-    const refRes = getModifiedStat(baseEntity.saves?.reflex || 0, baseEntity, activeConditions, ['reflex', 'dex_checks', 'all_dcs']);
-    const willRes = getModifiedStat(baseEntity.saves?.will || 0, baseEntity, activeConditions, ['will', 'all_dcs']);
+        {/* === ROW 2: CONDITIONS === */}
+        <div className="flex flex-wrap items-center gap-2 mb-2 shrink-0 min-h-[26px]">
+          <h3 className="mr-2 shrink-0">Conditions</h3>
+         {activeConditions.map((cond, i) => {
+           const def = CONDITIONS[cond.name];
+           const bgClass = 'bg-[#fad23f]';
+           const borderClass = 'border-none';
+           const textClass = 'text-black font-bold';
 
-    return (
-        <div className="flex flex-col gap-4 overflow-hidden h-full">
-            <h2 className={`text-xs font-bold font-label uppercase tracking-widest flex items-center gap-2 shrink-0 ${isTarget ? 'text-secondary' : 'text-primary'}`}>
-              {label}
-            </h2>
-            <div className={`corner-cut bg-surface-container-high p-6 border-l-2 relative flex flex-col min-h-0 overflow-y-auto ${isTarget ? 'border-secondary' : 'border-primary'}`}>
-              <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r to-transparent ${isTarget ? 'from-secondary/40' : 'from-primary/40'}`}></div>
-              
-              {/* Header / Traits / HP */}
-              <div className="flex justify-between items-start mb-6 gap-6">
-                <div className="min-w-0 pr-4 flex-1">
-                  <h3 className={`text-2xl font-black font-headline tracking-tight uppercase leading-none truncate ${isTarget ? 'text-secondary' : 'text-primary'}`}>{activeCombatant.name}</h3>
-                  <p className={`text-[10px] font-label tracking-widest uppercase mt-1 mb-2 ${isTarget ? 'text-secondary/60' : 'text-secondary'}`}>Level {baseEntity.level || '?'} • {isPC ? 'Player Character' : 'Creature'}</p>
-                  
-                  {/* HP Progress Bar */}
-                  <div className="w-full h-1.5 bg-surface-container-lowest mb-3 overflow-hidden">
-                      <div 
-                         className={`h-full transition-all duration-500 ease-out ${isLowHp ? 'bg-error animate-pulse shadow-[0_0_10px_rgba(255,100,100,0.8)]' : isTarget ? 'bg-primary-container/50' : 'bg-primary-container'}`} 
-                         style={{ width: `${hpPercent}%` }}
-                      ></div>
+           return (
+             <Tooltip key={i} content={def?.desc}>
+               <div className={`flex items-center shrink-0 shadow-sm group/container h-6 min-w-0 ${bgClass}`}>
+                  <div className={`flex items-center px-1.5 text-[12px] font-label leading-none pt-[2px] ${textClass} h-full`}>
+                    <span className="drop-shadow-none">{cond.name}</span>
+                    {def?.hasValue && <span className="opacity-80 ml-1.5 drop-shadow-none">{cond.value}</span>}
                   </div>
-
-                  <div className="flex flex-wrap gap-1.5">
-                    {baseEntity.traits?.map((t, i) => (
-                        <span key={i} className={`px-2 py-0.5 border text-[9px] font-bold font-label uppercase ${isTarget ? 'bg-secondary/10 border-secondary/30 text-secondary' : 'bg-primary/20 border-primary/30 text-primary'}`}>{t}</span>
-                    ))}
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <div className={`text-xs font-bold font-label uppercase ${hpColor}`}>Current HP</div>
-                  <div className={`text-4xl font-black font-headline flex items-baseline gap-1 justify-end ${hpColor}`}>
-                      <div className="w-20 inline-block text-right">
-                         <InlineEditable 
-                            value={currentHP} 
-                            isEditing={true} 
-                            type="number" 
-                            className={`border-none p-1 text-right h-auto leading-none w-full ${hpColor} ${isTarget ? 'bg-secondary/10' : 'bg-primary/10'}`}
-                            onSave={handleHPSave}
-                         />
-                      </div>
-                      <span className="text-sm font-normal opacity-50">/ {maxHP}</span>
-                  </div>
-                  {isPC && <div className={`text-[8px] uppercase mt-1 ${isTarget ? 'text-secondary/40' : 'text-primary/40'}`}>Persists globally</div>}
-                  {!isPC && <div className={`text-[8px] uppercase mt-1 ${isTarget ? 'text-secondary/40' : 'text-primary/40'}`}>Instance local</div>}
-                </div>
-              </div>
-
-               {/* Conditions */}
-               <div className="flex justify-between items-end mb-2 mt-4 shrink-0">
-                 <div className="text-[10px] font-bold font-label text-secondary uppercase tracking-widest opacity-60">Conditions</div>
-                 <button onClick={() => setIsModalOpen(true)} className={`text-[9px] font-bold font-label uppercase flex items-center gap-1 hover:text-white transition-colors ${isTarget ? 'text-secondary pointer-events-none opacity-50' : 'text-primary'}`} disabled={isTarget}>
-                    <span className="material-symbols-outlined text-[12px]">add</span> Add Condition
-                 </button>
-               </div>
-               
-               <div className="flex flex-wrap gap-2 mb-4 shrink-0">
-                 {activeConditions.map((cond, i) => {
-                     const def = CONDITIONS[cond.name];
-                     return (
-                         <Tooltip key={i} content={def?.desc}>
-                             <div className={`flex items-center gap-1 px-2 py-1 bg-surface border border-outline-variant/30 rounded group`}>
-                                <span className={`text-[10px] font-bold font-label uppercase tracking-widest ${def?.isBuff ? 'text-success' : 'text-error'}`}>{cond.name} <span className="opacity-70">{def?.hasValue && cond.value}</span></span>
-                                
-                                {!isTarget && (
-                                    <div className="flex items-center ml-2 border-l border-outline-variant/30 pl-2 pointer-events-auto">
-                                        {def?.hasValue && (
-                                            <>
-                                                <button onClick={() => handleUpdateConditionValue(cond.name, -1)} className="px-1 hover:text-white text-secondary transition-colors font-black text-xs leading-none">-</button>
-                                                <button onClick={() => handleUpdateConditionValue(cond.name, 1)} className="px-1 hover:text-white text-secondary transition-colors font-black text-xs leading-none mr-2">+</button>
-                                            </>
-                                        )}
-                                        <button onClick={() => handleRemoveCondition(cond.name)} className="text-secondary/50 hover:text-error transition-colors flex items-center shrink-0">
-                                           <span className="material-symbols-outlined text-[12px]" data-icon="close">close</span>
-                                        </button>
-                                    </div>
-                                )}
-                             </div>
-                         </Tooltip>
-                     );
-                 })}
-                 {activeConditions.length === 0 && (
-                     <div className="text-[10px] uppercase font-label text-secondary italic opacity-50">None</div>
+                 
+                 {!isTarget && (
+                   <div className={`flex items-center h-full`}>
+                     <div className="w-[1px] h-[80%] bg-black/20"></div>
+                     {def?.hasValue ? (
+                       <>
+                         <button onClick={() => handleUpdateConditionValue(cond.name, 1)} className={`group/btn px-1.5 flex items-center justify-center transition-colors ${textClass} hover:bg-black/20 h-full`}><span className="relative bottom-[2px] text-[14px] leading-none">+</span></button>
+                         <div className="w-[1px] h-[80%] bg-black/20"></div>
+                         <button onClick={() => handleUpdateConditionValue(cond.name, -1)} className={`group/btn px-1.5 flex items-center justify-center transition-colors ${textClass} hover:bg-black/20 h-full`}><span className="relative bottom-[2px] text-[16px] leading-none">-</span></button>
+                       </>
+                     ) : (
+                       <button onClick={() => handleRemoveCondition(cond.name)} className={`group/btn px-1.5 flex items-center justify-center transition-colors ${textClass} hover:bg-black/20 h-full`}>
+                         <span className="material-symbols-outlined text-[14px]" data-icon="close">close</span>
+                       </button>
+                     )}
+                   </div>
                  )}
                </div>
-
-              {/* Defenses */}
-              <div className="text-[10px] font-bold font-label text-secondary uppercase tracking-widest opacity-60 mb-2 mt-4 shrink-0">Defences</div>
-              <div className="grid grid-cols-1 gap-2 mb-4 shrink-0">
-                <div className={`bg-surface-container-highest p-3 flex flex-col items-center border border-outline-variant/10 ${acRes.delta < 0 ? 'border-error/50 bg-error/5' : ''}`}>
-                  <span className="text-[10px] font-label text-secondary uppercase opacity-60">Armor Class</span>
-                  <span className={`text-xl font-black font-headline ${acRes.delta < 0 ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={acRes.causes.join(', ')}>
-                     {acRes.final}
-                  </span>
-                </div>
-              </div>
-
-              {/* Saves */}
-              <div className="text-[10px] font-bold font-label text-secondary uppercase tracking-widest opacity-60 mb-2 mt-4 shrink-0">Saves</div>
-              <div className="grid grid-cols-3 gap-2 mb-6 shrink-0">
-                <div className={`bg-surface-container-highest p-3 flex flex-col items-center border border-outline-variant/10 ${fortRes.delta < 0 ? 'border-error/50 bg-error/5' : ''}`}>
-                  <span className="text-[10px] font-label text-secondary uppercase opacity-60">Fortitude</span>
-                  <button onClick={() => rollDice(`${activeCombatant.name} Fortitude`, fortRes.final, fortRes.causes)} className={`group flex items-center justify-center gap-1.5 text-xl font-black font-headline hover:bg-primary/20 px-2 rounded transition-colors cursor-pointer ${fortRes.delta < 0 ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={fortRes.causes.join(', ')}><SingleD20Icon className="w-5 h-5 group-hover:animate-spin opacity-80 shrink-0" />{formatMod(fortRes.final)}</button>
-                </div>
-                <div className={`bg-surface-container-highest p-3 flex flex-col items-center border border-outline-variant/10 ${refRes.delta < 0 ? 'border-error/50 bg-error/5' : ''}`}>
-                  <span className="text-[10px] font-label text-secondary uppercase opacity-60">Reflex</span>
-                  <button onClick={() => rollDice(`${activeCombatant.name} Reflex`, refRes.final, refRes.causes)} className={`group flex items-center justify-center gap-1.5 text-xl font-black font-headline hover:bg-primary/20 px-2 rounded transition-colors cursor-pointer ${refRes.delta < 0 ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={refRes.causes.join(', ')}><SingleD20Icon className="w-5 h-5 group-hover:animate-spin opacity-80 shrink-0" />{formatMod(refRes.final)}</button>
-                </div>
-                <div className={`bg-surface-container-highest p-3 flex flex-col items-center border border-outline-variant/10 ${willRes.delta < 0 ? 'border-error/50 bg-error/5' : ''}`}>
-                  <span className="text-[10px] font-label text-secondary uppercase opacity-60">Will</span>
-                  <button onClick={() => rollDice(`${activeCombatant.name} Will Save`, willRes.final, willRes.causes)} className={`group flex items-center justify-center gap-1.5 text-xl font-black font-headline hover:bg-primary/20 px-2 rounded transition-colors cursor-pointer ${willRes.delta < 0 ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={willRes.causes.join(', ')}><SingleD20Icon className="w-5 h-5 group-hover:animate-spin opacity-80 shrink-0" />{formatMod(willRes.final)}</button>
-                </div>
-              </div>
-
-              {/* Strikes & Attacks */}
-              <div className="text-[10px] font-bold font-label text-secondary uppercase tracking-widest opacity-60 mb-2 mt-4 shrink-0">Strikes / Weapons</div>
-              <div className="flex flex-col gap-2 pb-4">
-                  {(baseEntity.attacks || baseEntity.weapons || []).map((atk, i) => {
-                      const name = atk.weapon || atk.name;
-                      const bonus = atk.bonus || atk.attackBonus || 0;
-                      const damage = atk.damage || atk.weaponData?.damage || '1d4';
-                      const traits = atk.traits || atk.weaponData?.traits || [];
-                      const atkRes = getModifiedStat(bonus, baseEntity, activeConditions, ['attack_rolls', 'all_checks', traits.includes('Agile') ? 'agile_attacks' : null, traits.includes('Finesse') ? 'dex_checks' : 'str_checks'].filter(Boolean));
-                      const isAtkPenalized = atkRes.delta < 0;
-
-                      return (
-                       <div key={i} className={`bg-surface-container-lowest p-3 border-l-2 flex justify-between items-center group shrink-0 ${isAtkPenalized ? 'border-error/50 bg-error/5' : isTarget ? 'border-secondary/50' : 'border-primary/50'}`}>
-                        <div className="flex-1 min-w-0 pr-2">
-                            <span className={`font-bold text-sm uppercase flex items-center truncate ${isAtkPenalized ? 'text-error' : isTarget ? 'text-secondary' : 'text-primary'}`} title={atkRes.causes.join(', ')}>
-                                {atk.action && atk.action !== "" && <ActionIcon action={atk.action} className="h-[1.2em] w-auto inline-block align-middle mr-1.5 shrink-0" />}
-                                {name}
-                            </span>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                                {traits.map((t, idx) => (
-                                    <StatPill key={idx} size="xs" variant={isTarget ? "secondary" : "primary"}>{t}</StatPill>
-                                ))}
-                            </div>
-                        </div>
-                        <StrikeActionGroup 
-                            name={name} 
-                            attackBonus={atkRes.final} 
-                            damage={damage} 
-                            traits={traits} 
-                            causes={atkRes.causes} 
-                            theme={isAtkPenalized ? 'error' : isTarget ? 'secondary' : 'primary'} 
-                        />
-                       </div>
-                      )
-                  })}
-              </div>
-
-            </div>
-            
-            <ConditionsModal 
-                isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)} 
-                activeConditions={activeConditions}
-                onAddCondition={handleAddCondition}
-            />
+             </Tooltip>
+           );
+         })}
+          {!isTarget && (
+            <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center shrink-0 shadow-sm h-6 w-6 bg-[#fad23f] text-black hover:brightness-110 transition-all cursor-pointer" title="Add Condition">
+              <span className="relative bottom-[1.5px] text-[16px] font-bold leading-none">+</span>
+            </button>
+          )}
         </div>
-    );
+
+        {/* === ROW 2.5: EFFECTS === */}
+        <div className="flex flex-wrap items-center gap-2 mb-4 pb-4 shrink-0 min-h-[26px] border-b border-tertiary/30">
+          <h3 className="mr-2 shrink-0">Effects</h3>
+         {activeEffects.map((eff, i) => {
+           const def = availableEffects.find(e => e.name === eff.name);
+           const bgClass = 'bg-[#fad23f]';
+           const textClass = 'text-black font-bold';
+
+           return (
+             <Tooltip key={i} content={def?.desc}>
+               <div className={`flex items-center shrink-0 shadow-sm group/container h-6 min-w-0 ${bgClass}`}>
+                  <div className={`flex items-center px-1.5 text-[12px] font-label leading-none pt-[2px] ${textClass} h-full`}>
+                     <span className="drop-shadow-none">{eff.name}</span>
+                   </div>
+                  
+                  {!isTarget && (
+                    <div className={`flex items-center h-full`}>
+                      <div className="w-[1px] h-[80%] bg-black/20"></div>
+                      <button onClick={() => handleRemoveEffect(eff.name)} className={`group/btn px-1.5 flex items-center justify-center transition-colors ${textClass} hover:bg-black/20 h-full`}>
+                        <span className="material-symbols-outlined text-[14px]" data-icon="close">close</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </Tooltip>
+           );
+         })}
+          {!isTarget && (
+            <button onClick={() => setIsEffectsModalOpen(true)} className="flex items-center justify-center shrink-0 shadow-sm h-6 w-6 bg-[#fad23f] text-black font-bold hover:brightness-110 transition-all cursor-pointer" title="Add Effect">
+              <span className="relative bottom-[1.5px] text-[16px] leading-none">+</span>
+            </button>
+          )}
+        </div>
+        
+       {/* === ROW 3: ALL CORE DEFENSES === */}
+       <div className="flex flex-col gap-2 mb-4 pb-4 border-b border-tertiary/30">
+         <div className="flex flex-wrap items-center gap-2">
+           <h3 className="mr-2 shrink-0">Defenses</h3>
+           
+           <StatPill label="AC" variant={acRes.delta < 0 ? 'condition-negative' : (acRes.delta > 0 ? 'condition-positive' : 'primary')} title={acRes.causes?.join(', ')}>
+             {acRes.final}
+           </StatPill>
+
+           <StatPill label="Fortitude" onClick={() => rollDice(`${activeCombatant.name} Fortitude`, fortRes.final, fortRes.causes)} variant={fortRes.delta < 0 ? 'condition-negative' : (fortRes.delta > 0 ? 'condition-positive' : 'primary')}>
+             {formatMod(fortRes.final)}
+           </StatPill>
+           
+           <StatPill label="Reflex" onClick={() => rollDice(`${activeCombatant.name} Reflex`, refRes.final, refRes.causes)} variant={refRes.delta < 0 ? 'condition-negative' : (refRes.delta > 0 ? 'condition-positive' : 'primary')}>
+             {formatMod(refRes.final)}
+           </StatPill>
+           
+           <StatPill label="Will" onClick={() => rollDice(`${activeCombatant.name} Will Save`, willRes.final, willRes.causes)} variant={willRes.delta < 0 ? 'condition-negative' : (willRes.delta > 0 ? 'condition-positive' : 'primary')}>
+             {formatMod(willRes.final)}
+           </StatPill>
+         </div>
+
+         {/* Resistances & Weaknesses */}
+         {(baseEntity.immunities?.length > 0 || baseEntity.resistances?.length > 0 || baseEntity.weaknesses?.length > 0) && (
+           <div className="flex flex-col gap-2 max-w-full overflow-hidden">
+            {baseEntity.immunities?.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+               <h3 className="mr-2 shrink-0">Immunities</h3>
+               <InlineImmunityEditor values={baseEntity.immunities} isEditing={false} />
+              </div>
+            )}
+            {baseEntity.resistances?.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+               <h3 className="mr-2 shrink-0">Resistances</h3>
+               <InlineResistanceEditor values={baseEntity.resistances} isEditing={false} variant="resistance" />
+              </div>
+            )}
+            {baseEntity.weaknesses?.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+               <h3 className="mr-2 shrink-0">Weaknesses</h3>
+               <InlineResistanceEditor values={baseEntity.weaknesses} isEditing={false} variant="weakness" />
+              </div>
+            )}
+           </div>
+         )}
+       </div>
+
+        {/* === ROW 4: CAPABILITIES === */}
+        <div className="flex flex-col gap-2 mb-4 pb-4 border-b border-tertiary/30">
+         {/* Senses */}
+         <div className="flex flex-wrap items-center gap-2">
+           <h3 className="mr-2 shrink-0">Senses</h3>
+           <StatPill label="Perception" onClick={() => rollDice('Perception', perceptionRes.final, perceptionRes.causes)} variant={perceptionRes.delta < 0 ? 'condition-negative' : (perceptionRes.delta > 0 ? 'condition-positive' : 'primary')}>
+             {formatMod(perceptionRes.final)}
+           </StatPill>
+           <InlineSenseEditor values={baseEntity.senses} isEditing={false} hideNone={true} />
+         </div>
+
+         {/* Languages */}
+         {(baseEntity.languages?.length > 0) && (
+           <div className="flex flex-wrap items-center gap-2">
+            <h3 className="mr-2 shrink-0">Languages</h3>
+            <InlineTraitSelectEditor values={baseEntity.languages} isEditing={false} />
+           </div>
+         )}
+
+         {/* Skills */}
+         {(Object.keys(modifiedSkills).length > 0) && (
+           <div className="flex flex-wrap items-center gap-2">
+             <h3 className="mr-2 shrink-0">Skills</h3>
+             <InlineSkillEditor skills={modifiedSkills} isEditing={false} formatMod={formatMod} />
+           </div>
+         )}
+        </div>
+
+       {/* === ROW 5: STRIKES, WEAPONS & SPELLS === */}
+       {isPC && (
+         <div className="flex flex-col gap-6 w-full">
+           {(baseEntity.weapons && baseEntity.weapons.length > 0) && (
+             <div className="flex flex-col gap-1">
+               <h3 className="mr-2 shrink-0">Weapons</h3>
+               <InlinePlayerWeapons pcId={baseEntity.id} weapons={baseEntity.weapons} isEditing={false} formatMod={formatMod} />
+             </div>
+           )}
+           <InlineSpellcastingEditor spellcasting={baseEntity.spellcasting} collectionName="players" entityId={baseEntity.id} entity={baseEntity} isEditing={false} />
+           {(baseEntity.items && baseEntity.items.length > 0) && (
+             <div className="flex flex-col gap-1">
+               <h3 className="mr-2 shrink-0">Inventory</h3>
+               <InlinePlayerInventory pcId={baseEntity.id} items={baseEntity.items} isEditing={false} />
+             </div>
+           )}
+         </div>
+       )}
+
+       {!isPC && (
+         <div className="flex flex-col gap-6 w-full">
+           {/* Strikes */}
+           {(modifiedAttacks && modifiedAttacks.length > 0) && (
+             <div className="flex flex-col gap-1">
+              <h3 className="mr-2 shrink-0">Attacks</h3>
+              <InlineCreatureAttacks attacks={modifiedAttacks} entityId={baseEntity.id} isEditing={false} formatMod={formatMod} />
+             </div>
+           )}
+
+           {/* Actions */}
+           {(baseEntity.actions && baseEntity.actions.length > 0) && (
+             <div className="flex flex-col gap-1">
+               <h3 className="mr-2 shrink-0">Actions</h3>
+               <InlineCreatureAbilities abilities={baseEntity.actions} type="action" entityId={baseEntity.id} isEditing={false} />
+             </div>
+           )}
+
+           {/* Passives */}
+           {(baseEntity.passives && baseEntity.passives.length > 0) && (
+             <div className="flex flex-col gap-1">
+               <h3 className="mr-2 shrink-0">Passives</h3>
+               <InlineCreatureAbilities abilities={baseEntity.passives} type="passive" entityId={baseEntity.id} isEditing={false} />
+             </div>
+           )}
+
+           {/* Spells */}
+           <InlineSpellcastingEditor spellcasting={baseEntity.spellcasting} collectionName="creatures" entityId={baseEntity.id} entity={baseEntity} isEditing={false} />
+         </div>
+       )}
+
+      </div>
+      
+      <ConditionsModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        activeConditions={activeConditions}
+        onAddCondition={handleAddCondition}
+      />
+      <EffectsModal 
+        isOpen={isEffectsModalOpen} 
+        onClose={() => setIsEffectsModalOpen(false)} 
+        activeEffects={activeEffects}
+        availableEffects={availableEffects}
+        onAddEffect={handleAddEffect}
+      />
+     </div>
+    </div>
+  );
 }
 
 export default function EncounterActiveOverlay({ encounter, selectedTurnId }) {
-    return (
-        <div className="col-span-9 grid grid-cols-2 gap-6 h-full min-h-0">
-           <EntityCard label="Active" turnId={encounter.activeTurnId} encounter={encounter} isTarget={false} />
-           <EntityCard label="Selected" turnId={selectedTurnId} encounter={encounter} isTarget={true} />
-        </div>
-    );
+  return (
+    <div className="col-span-9">
+      <EntityCard label="Selected" turnId={selectedTurnId} encounter={encounter} isTarget={false} />
+    </div>
+  );
 }

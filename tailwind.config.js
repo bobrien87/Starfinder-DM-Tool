@@ -8,7 +8,7 @@ export default {
   theme: {
     extend: {
       "colors": {
-          "outline-variant": "#3b494c",
+          "outline-variant": "#812b2d",
           "surface-container-high": "#2e353f",
           "on-primary-container": "#00626e",
           "on-secondary-fixed": "#0f1c2c",
@@ -17,17 +17,17 @@ export default {
           "inverse-on-surface": "#2a313b",
           "surface-bright": "#333a44",
           "primary-fixed": "#9cf0ff",
-          "error": "#ffb4ab",
+          "error": "#FF8EBE",
           "tertiary-fixed": "#ffdcc3",
           "surface-dim": "#0d141d",
           "surface-container-highest": "#3a424e",
           "secondary-fixed": "#d6e4f9",
-          "secondary": "#bac8dc",
+          "secondary": "#ef574e",
           "on-secondary-fixed-variant": "#3a4859",
           "on-primary-fixed": "#001f24",
           "on-tertiary-fixed": "#2f1500",
           "on-tertiary": "#4d2600",
-          "primary": "#c3f5ff",
+          "primary": "#57e6ef",
           "inverse-primary": "#006875",
           "on-primary": "#00363d",
           "tertiary-fixed-dim": "#ffb77d",
@@ -41,20 +41,20 @@ export default {
           "surface-container": "#242a34",
           "outline": "#849396",
           "background": "#0d141d",
-          "tertiary": "#ffe9da",
+          "tertiary": "#812b2d",
           "secondary-fixed-dim": "#bac8dc",
           "inverse-surface": "#dce3f0",
           "primary-container": "#00e5ff",
-          "error-container": "#93000a",
           "surface-tint": "#00daf3",
-          "on-tertiary-fixed-variant": "#6e3900",
           "surface": "#0d141d",
           "on-secondary": "#243141",
-          "on-error": "#690005",
           "on-surface-variant": "#bac9cc",
-          "on-error-container": "#ffdad6",
           "surface-variant": "#2e353f",
-          "tertiary-container": "#ffc598"
+          "tertiary-container": "#ffc598",
+          "surface-matte": "#12111A",
+          "accent-green": "#1df283",
+          "accent-yellow": "#fad23f",
+          "off-white": "#FCFAED"
       },
       "borderRadius": {
           "DEFAULT": "0px",
@@ -63,9 +63,9 @@ export default {
           "full": "9999px"
       },
       "fontFamily": {
-          "headline": ["Space Grotesk"],
+          "headline": ["Rajdhani"],
           "body": ["Plus Jakarta Sans"],
-          "label": ["Space Grotesk"]
+          "label": ["Rajdhani"]
       }
     },
   },

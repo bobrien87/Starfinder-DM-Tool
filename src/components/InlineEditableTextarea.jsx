@@ -2,48 +2,48 @@ import React, { useState, useEffect } from 'react';
 import { useDatabase } from '../context/DatabaseContext';
 
 export default function InlineEditableTextarea({ 
-    value, 
-    collectionName, 
-    entityId, 
-    fieldPath, 
-    isEditing, 
-    className = '',
-    onSave = null
+  value, 
+  collectionName, 
+  entityId, 
+  fieldPath, 
+  isEditing, 
+  className = '',
+  onSave = null
 }) {
-    const { updateEntity } = useDatabase();
-    const [localValue, setLocalValue] = useState(value);
+  const { updateEntity } = useDatabase();
+  const [localValue, setLocalValue] = useState(value);
 
-    // Sync local state down from Firestore whenever the stream updates
-    useEffect(() => {
-        setLocalValue(value);
-    }, [value]);
+  // Sync local state down from Firestore whenever the stream updates
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
 
-    const handleBlur = async () => {
-        if (localValue !== value) {
-            try {
-               if (onSave) {
-                   await onSave(localValue);
-               } else {
-                   await updateEntity(collectionName, entityId, { [fieldPath]: localValue });
-               }
-            } catch (err) {
-               console.error("Failed to inline update textarea:", err);
-               setLocalValue(value);
-            }
+  const handleBlur = async () => {
+    if (localValue !== value) {
+      try {
+        if (onSave) {
+          await onSave(localValue);
+        } else {
+          await updateEntity(collectionName, entityId, { [fieldPath]: localValue });
         }
-    };
-
-    if (!isEditing) {
-        return <p className={className}>{value}</p>;
+      } catch (err) {
+        console.error("Failed to inline update textarea:", err);
+        setLocalValue(value);
+      }
     }
+  };
 
-    return (
-        <textarea 
-            className={`bg-transparent outline-none border-b-[2px] border-primary/40 focus:border-primary w-full resize-y min-h-[60px] ${className}`}
-            value={localValue || ''}
-            onChange={(e) => setLocalValue(e.target.value)}
-            onBlur={handleBlur}
-            onClick={(e) => e.stopPropagation()} // Stop bubbling
-        />
-    );
+  if (!isEditing) {
+    return <p className={className}>{value}</p>;
+  }
+
+  return (
+    <textarea 
+      className={`bg-transparent outline-none border-b-[2px] border-primary/40 focus:border-primary w-full resize-y min-h-[60px] ${className}`}
+      value={localValue || ''}
+      onChange={(e) => setLocalValue(e.target.value)}
+      onBlur={handleBlur}
+      onClick={(e) => e.stopPropagation()} // Stop bubbling
+    />
+  );
 }

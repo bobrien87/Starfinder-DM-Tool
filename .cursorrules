@@ -1,0 +1,7 @@
+# Starfinder DM Tool - Active Encounter Check
+
+Whenever requested to change an element, component, style, or logic on a static page (e.g., Creature Detail, Player Detail, Items, etc.), you MUST verify if this change impacts the Active Encounter (`EncounterActiveOverlay.jsx` / `ActiveEncounter.jsx` / `EncounterInitiativeList.jsx`). 
+
+The Active Encounter aggregates components from across the application and uses mathematical wrappers like `getModifiedStat` to handle live condition tracking. 
+
+If there is crossover, you must explicitly ask the user to confirm whether the Active Encounter component also needs updating to match or be re-integrated.
